@@ -45,7 +45,7 @@ Real result of this flow: [fishtank-demo-site PR #2](https://github.com/ssuvorin
 ### Devin use case
 - **Devin is part of the product.** The backend uses the Devin v3 API (`backend/app/services/devin.py`). It creates a session with a structured-output schema (`pr_url`, `summary`, `todo_for_owner`), passes a scoped GitHub token as a sensitive session secret, and caps spend with `max_acu_limit`. The frontend polls the session and links to the live session and the PR.
 - **The prompt is grounded in the audit.** Every fact in it comes from the audit response: findings, quotes, articles and acceptance criteria. Devin is told never to invent article numbers and to leave `TODO` placeholders instead of stopping.
-- **Devin built this product.** It wrote the core code. It ran the smoke and regression pass on 15 UAE company sites and fixed what it found (PR #3). It merged that PR and deployed it to the production host above.
+- **Devin built this product.** It wrote the core code, and every change reaches `main` through a pull request that Devin opens. It ran the smoke and regression pass on 15 UAE company sites and fixed what it found (PR #3). It merged that PR and deployed it to the production host above.
 
 ## Architecture
 
