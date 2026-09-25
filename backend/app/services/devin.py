@@ -118,12 +118,13 @@ async def create_fix_session(repo_input: str, remediation_md: str) -> dict:
 
 
 async def get_fix_session(session_id: str) -> dict:
-    if not re.fullmatch(r"devin-[A-Za-z0-9]+", session_id):
+    sid = session_id if session_id.startswith("devin-") else f"devin-{session_id}"
+    if not re.fullmatch(r"devin-[A-Za-z0-9]+", sid):
         raise InvalidRepoError("Invalid Devin session id")
     url, headers = _config()
     try:
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
-            resp = await client.get(f"{url}/{session_id}", headers=headers)
+            resp = await client.get(f"{url}/{sid}", headers=headers)
     except httpx.HTTPError as exc:
         raise DevinUnavailableError(f"Could not reach Devin API: {exc}")
     if resp.status_code >= 400:
