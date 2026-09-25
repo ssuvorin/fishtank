@@ -21,3 +21,8 @@ dist/
 *.tsbuildinfo
 playwright-report/
 test-results/
+backend/static/
+*.tsbuildinfo
+backend/.venv/
+frontend/dist/
+frontend/node_modules/

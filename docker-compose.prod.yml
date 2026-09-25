@@ -1,0 +1,19 @@
+# All-in-one production deploy — single container, single port.
+# Usage: OPENROUTER_API_KEY=... docker compose -f docker-compose.prod.yml up -d --build
+services:
+  app:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.prod
+    container_name: complyrisk
+    ports:
+      - "0.0.0.0:28800:8000"
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_JEV_MODEL: ${OPENROUTER_JEV_MODEL:-~typesafe/jev-latest}
+      OPENROUTER_VAR_MODEL: ${OPENROUTER_VAR_MODEL:-~openai/gpt-sol-latest}
+      CORS_ORIGINS: ""
+    restart: unless-stopped
