@@ -6,7 +6,7 @@ import { JURISDICTION_LABEL, fmtUsd, jurisdictionsOf } from '../format'
 import { prefersReducedMotion } from '../motion'
 
 const SEVERITIES: Severity[] = ['CRITICAL', 'HIGH', 'MEDIUM']
-const JURISDICTIONS: Jurisdiction[] = ['uae', 'difc', 'eu']
+const JURISDICTIONS: Jurisdiction[] = ['uae', 'difc', 'adgm', 'eu']
 
 /** Gauge full-scale: 8% of revenue, with GDPR's upper tier (4%, Art. 83(5)) at mid-dial. */
 const GAUGE_MAX = 0.08

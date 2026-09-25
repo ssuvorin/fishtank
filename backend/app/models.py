@@ -38,7 +38,12 @@ class PenaltyFramework(BaseModel):
 
     type: str = "administrative_fine"
     currency: str = "USD"
-    default_exposure_calc: str = "0"
+    # Realistic expected penalty (precedent/SMB-calibrated), evaluated with
+    # `annual_revenue` in scope — this is what the headline exposure uses.
+    modeled_calc: str = "0"
+    # Published statutory ceiling in USD when one exists (None = regulator-set
+    # schedule / undisclosed). Shown on the card as the legal cap.
+    statutory_max_usd: float | None = None
     basis: str = "estimate"
 
 
@@ -72,6 +77,7 @@ class ViolationResult(BaseModel):
     basis: str
     evidence_quote: str
     remediation: str
+    statutory_label: str = ""
 
 
 class ExposureSummary(BaseModel):

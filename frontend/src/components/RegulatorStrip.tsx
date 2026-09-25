@@ -1,10 +1,18 @@
 import type { Jurisdiction } from '../format'
 
 /**
- * Official-name text badges for the regulators behind the scored rules.
- * Text only — deliberately no seals or logos (we are not affiliated).
+ * Official-name badges for the regulators behind the scored rules.
+ * Logos for free-zone regulators ship in /logos/freezones (PR #2); generic
+ * authorities (UAE Data Office, EDPB, CNIL) stay text-only — no assets yet.
  */
-const REGULATORS: { name: string; frame: string; host: string; href: string; j: Jurisdiction }[] = [
+const REGULATORS: {
+  name: string
+  frame: string
+  host: string
+  href: string
+  j: Jurisdiction
+  logo?: string
+}[] = [
   {
     name: 'UAE Data Office',
     frame: 'PDPL · Decree-Law 45/2021',
@@ -18,6 +26,15 @@ const REGULATORS: { name: string; frame: string; host: string; href: string; j: 
     host: 'difc.ae',
     href: 'https://www.difc.ae/',
     j: 'difc',
+    logo: '/logos/freezones/difc-white.png',
+  },
+  {
+    name: 'ADGM Office of Data Protection',
+    frame: 'ADGM DPR 2021 · s.55 fines',
+    host: 'adgm.com',
+    href: 'https://www.adgm.com/operating-in-adgm/office-of-data-protection',
+    j: 'adgm',
+    logo: '/logos/freezones/adgm-white.svg',
   },
   {
     name: 'European Data Protection Board',
@@ -52,6 +69,9 @@ export default function RegulatorStrip({ variant }: { variant: 'intro' | 'footer
               rel="noreferrer noopener"
               title={`${r.name} — ${r.host}`}
             >
+              {r.logo && (
+                <img className="reg__logo" src={r.logo} alt="" aria-hidden />
+              )}
               <span className="reg__name">{r.name}</span>
               {variant === 'intro' && <span className="reg__frame">{r.frame}</span>}
               <span className="reg__host mono">{r.host}</span>

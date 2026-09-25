@@ -15,7 +15,7 @@ export function useStaggerIn(
   ref: RefObject<HTMLElement>,
   selector: string,
   deps: DependencyList,
-  { step = 70, start = 0, distance = 16 }: { step?: number; start?: number; distance?: number } = {},
+  { step = 50, start = 0, distance = 8 }: { step?: number; start?: number; distance?: number } = {},
 ): void {
   useLayoutEffect(() => {
     const root = ref.current
@@ -26,7 +26,7 @@ export function useStaggerIn(
     const anim = animate(targets, {
       opacity: [0, 1],
       translateY: [distance, 0],
-      duration: 820,
+      duration: 600,
       delay: stagger(step, { start }),
       ease: 'outExpo',
       // Drop inline transform/opacity once settled so CSS :hover transforms work.

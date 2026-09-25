@@ -70,6 +70,9 @@ function ViolationCard({ v, url }: { v: ViolationResult; url: string }) {
           <span className="v-card__stat-label">Exposure</span>
           <span className="v-card__exposure-usd">{fmtUsd(v.exposure_usd)}</span>
           <span className="v-card__exposure-aed mono">{fmtAed(v.exposure_aed)}</span>
+          {v.statutory_label && (
+            <span className="v-card__statutory mono">{v.statutory_label}</span>
+          )}
         </div>
       </div>
 

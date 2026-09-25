@@ -24,24 +24,18 @@ const FRAMEWORKS = ['UAE PDPL', 'DIFC DPL 2020', 'EU GDPR', 'ePrivacy Directive'
 function LogoMark() {
   return (
     <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden>
-      <defs>
-        <linearGradient id="lm-g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#ffd27a" />
-          <stop offset="1" stopColor="#f08a24" />
-        </linearGradient>
-      </defs>
       <path
         d="M16 3.5l10.5 4.6v7.6c0 6.4-4.4 11.3-10.5 13.1C9.9 27 5.5 22.1 5.5 15.7V8.1z"
         fill="none"
-        stroke="url(#lm-g)"
-        strokeWidth="2.2"
+        stroke="currentColor"
+        strokeWidth="1.8"
         strokeLinejoin="round"
       />
       <path
         d="M11 16.8l3.4 3.4 6.8-7.4"
         fill="none"
-        stroke="url(#lm-g)"
-        strokeWidth="2.4"
+        stroke="#e3ad52"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -93,7 +87,6 @@ export default function App() {
 
   return (
     <div className="shell">
-      <div className="shell__glow" aria-hidden />
       <AmbientBackground />
       <header className="topbar">
         <span className="uae-bar uae-bar--edge" aria-hidden />
@@ -126,7 +119,7 @@ export default function App() {
                 What is your privacy policy <em>actually</em> costing you?
               </h1>
               <p className="intro__lede">
-                One live pass scrapes your site, scores 10 UAE-first legal rules with
+                One live pass scrapes your site, scores 14 UAE-first legal rules with
                 calibrated probabilities, and prices the exposure in USD and AED.
               </p>
             </>
@@ -202,9 +195,11 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        <div className="footer__regs">
-          <RegulatorStrip variant="footer" />
-        </div>
+        {phase.kind !== 'idle' && (
+          <div className="footer__regs">
+            <RegulatorStrip variant="footer" />
+          </div>
+        )}
         <div className="footer__inner">
           <span className="footer__mark">
             <LogoMark /> ComplyRisk AI

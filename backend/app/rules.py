@@ -8,7 +8,7 @@ from pathlib import Path
 from .config import settings
 from .models import Rule
 
-_EXPECTED_RULES = 12
+_EXPECTED_RULES = 14
 
 
 def _law_json_path() -> Path:
@@ -44,8 +44,8 @@ def load_rules() -> list[Rule]:
     for r in rules:
         for field in ("id", "noul_assertion", "articles", "severity", "remediation"):
             assert getattr(r, field, None), f"rule {r.id!r} missing {field}"
-        assert r.penalty_framework.default_exposure_calc, (
-            f"rule {r.id!r} missing penalty_framework.default_exposure_calc"
+        assert r.penalty_framework.modeled_calc, (
+            f"rule {r.id!r} missing penalty_framework.modeled_calc"
         )
     return rules
 

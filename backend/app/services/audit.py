@@ -14,7 +14,7 @@ from ..models import (
 from ..rules import get_rules
 from .briefing import generate_briefing
 from .evidence import extract_evidence
-from .exposure import compute_exposure, usd_to_aed
+from .exposure import compute_exposure, statutory_label, usd_to_aed
 from .scoring import score_rules
 from .scraper import scrape_site, validate_url
 from ..models import DEFAULT_REVENUE
@@ -42,7 +42,10 @@ async def _pipeline(request: AuditRequest) -> AuditResponse:
         p = scores.get(rule.id, 0.0)
         flagged = p >= FLAG_THRESHOLD
         exposure_usd, basis = compute_exposure(rule, p, revenue) if flagged else (0.0, rule.penalty_framework.basis or "estimate")
-        quote = extract_evidence(rule, text)
+        quote = extract_evidence(
+            rule, text,
+            policy_texts=[d.text for d in docs if d.page_kind != "landing"],
+        )
         violations.append(
             ViolationResult(
                 id=rule.id,
@@ -57,6 +60,7 @@ async def _pipeline(request: AuditRequest) -> AuditResponse:
                 basis=basis,
                 evidence_quote=quote,
                 remediation=rule.remediation,
+                statutory_label=statutory_label(rule),
             )
         )
 

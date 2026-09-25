@@ -18,7 +18,7 @@ const STAGES: { key: string; title: string; detail: string; until: number }[] = 
   {
     key: 'score',
     title: 'Jev scoring',
-    detail: '10 legal rules · calibrated probabilities',
+    detail: '14 legal rules · calibrated probabilities',
     until: 55,
   },
   {

@@ -58,15 +58,36 @@ def _to_usd(amount: float, currency: str) -> float:
 
 
 def compute_exposure(rule: Rule, noul: float, annual_revenue: float) -> tuple[float, str]:
-    """Return (exposure_usd, basis). Exposure = resolved_calc(usd) × probability."""
+    """Return (exposure_usd, basis).
+
+    Exposure = modeled_calc(usd) × probability — a precedent-calibrated
+    estimate, not the statutory maximum. The ceiling is carried separately
+    via statutory_label() for display.
+    """
     pf = rule.penalty_framework
+    expr = pf.modeled_calc or getattr(pf, "default_exposure_calc", "0") or "0"
     try:
-        base = resolve_calc(pf.default_exposure_calc, annual_revenue)
+        base = resolve_calc(expr, annual_revenue)
     except (ValueError, SyntaxError, ZeroDivisionError):
         base = 0.0
     usd = _to_usd(base, pf.currency) * float(noul)
     basis = pf.basis or "estimate"
     return round(usd, 2), basis
+
+
+def statutory_label(rule: Rule) -> str:
+    """'Cap: USD 28M' style ceiling label, or '' when none published."""
+    cap = rule.penalty_framework.statutory_max_usd
+    if cap is None:
+        return ""
+    if cap >= 1_000_000:
+        v = cap / 1_000_000
+        s = f"{v:.0f}M" if v == int(v) else f"{v:.1f}M"
+    elif cap >= 1_000:
+        s = f"{cap / 1_000:.0f}K"
+    else:
+        s = f"{cap:.0f}"
+    return f"Cap: USD {s}"
 
 
 def usd_to_aed(usd: float) -> float:

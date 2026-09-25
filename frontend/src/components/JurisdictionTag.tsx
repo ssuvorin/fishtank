@@ -15,10 +15,20 @@ export default function JurisdictionTags({ law }: { law: string }) {
   )
 }
 
+const JURIS_LOGO: Partial<Record<Jurisdiction, string>> = {
+  difc: '/logos/freezones/difc-white.png',
+  adgm: '/logos/freezones/adgm-white.svg',
+}
+
 export function JurisdictionTag({ j, children }: { j: Jurisdiction; children?: ReactNode }) {
+  const logo = JURIS_LOGO[j]
   return (
     <span className={`juris juris--${j}`}>
-      {j === 'eu' ? null : <span className="uae-bar uae-bar--v" aria-hidden />}
+      {logo ? (
+        <img className="juris__logo" src={logo} alt="" aria-hidden />
+      ) : j === 'eu' ? null : (
+        <span className="uae-bar uae-bar--v" aria-hidden />
+      )}
       {JURISDICTION_LABEL[j]}
       {children}
     </span>

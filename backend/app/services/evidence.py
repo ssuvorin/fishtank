@@ -30,7 +30,16 @@ _KEYWORDS: dict[str, list[str]] = {
     ],
     "gdpr_explicit_consent": ["consent", "gdpr", "eea", "european", "withdraw"],
     "gdpr_child_data": ["children", "child", "minor", "age", "16", "13", "parental", "guardian"],
+    "adgm_breach_notification": ["breach", "72 hour", "notify", "commissioner", "incident"],
+    "adgm_registration_and_policy": ["data protection officer", "dpo", "registration", "fee", "policy"],
+    "adgm_data_transfers": [
+        "transfer", "outside", "adequacy", "scc", "standard contractual", "safeguard",
+    ],
+    "uae_security_measures": [
+        "encrypt", "security", "pseudonym", "integrity", "access control", "protect",
+    ],
 }
+
 
 _ABSENCE: dict[str, str] = {
     "uae_pdpl_lawful_consent": "The policy omits a provable consent mechanism and the right to withdraw consent at any time.",
@@ -42,6 +51,10 @@ _ABSENCE: dict[str, str] = {
     "automated_profiling_transparency": "The policy omits disclosure of automated processing/profiling decisions.",
     "cookie_reject_dark_patterns": "The scraped text omits a cookie-consent mechanism; no symmetric reject path could be verified.",
     "gdpr_explicit_consent": "The policy omits GDPR-grade explicit consent language for EEA users.",
+    "adgm_breach_notification": "The policy omits a 72-hour breach-notification commitment to the ADGM Office of Data Protection.",
+    "adgm_registration_and_policy": "The site shows no ADGM registration signal, internal DP policy reference, DPO contact, or data-protection fee awareness.",
+    "adgm_data_transfers": "The policy omits transfer safeguards for data leaving ADGM (adequacy list, ADGM SCCs, or derogations under DPR s.40-44).",
+    "uae_security_measures": "The policy omits technical/organisational security measures (encryption, pseudonymisation, integrity controls) required by PDPL Art. 20.",
     "gdpr_child_data": "The policy omits any age statement or parental-consent mechanism for children.",
 }
 
@@ -58,39 +71,82 @@ def _keyword_hits(rule: Rule) -> list[str]:
     return keys
 
 
-def extract_evidence(rule: Rule, text: str) -> str:
-    """Return a verbatim ≤300-char quote containing a rule-relevant keyword,
-    or an explicit absence statement when the document is silent."""
-    if not text:
+_CODE_WINDOW_RE = re.compile(
+    r"[{}]|=>|\bfunction\s*\w*\s*\(|\b(?:var|let|const)\s+[\w$]+\s*=|"
+    r"\b(?:document|window)\.|<\/?script|!important|indexOf\(|getCookie|push\("
+)
+
+
+def _is_code_window(window: str) -> bool:
+    """True when the sentence window is minified JS/CSS rather than prose."""
+    if _CODE_WINDOW_RE.search(window):
+        return True
+    punct = sum(window.count(c) for c in ";={}()")
+    return punct >= 6
+
+
+def extract_evidence(
+    rule: Rule,
+    text: str,
+    policy_texts: list[str] | None = None,
+) -> str:
+    """Return a verbatim ≤300-char quote containing a rule-relevant keyword.
+
+    Search order: policy pages first (privacy/cookies/legal), then the full
+    combined text. Code-like windows (minified JS/CSS) are skipped. Silence →
+    explicit absence statement (never fabricated).
+    """
+    corpus: list[str] = [t for t in (policy_texts or []) if t and t.strip()]
+    if text and text.strip():
+        corpus.append(text)
+    if not corpus:
         return _ABSENCE.get(rule.id, f"The scraped text is silent on {rule.category}.")
 
-    lowered = text.lower()
     keys = _KEYWORDS.get(rule.id, [])
-    # Find the earliest text position where any keyword appears.
-    best_pos, best_key = -1, ""
-    for k in keys:
-        i = lowered.find(k.lower())
-        if i != -1 and (best_pos == -1 or i < best_pos):
-            best_pos, best_key = i, k
+    mined = _keyword_hits(rule)
 
-    if best_pos == -1:
-        # broaden to terms mined from check_description/evidence
-        for k in _keyword_hits(rule):
-            i = lowered.find(k.lower())
-            if i != -1 and (best_pos == -1 or i < best_pos):
-                best_pos, best_key = i, k
-        if best_pos == -1:
-            return _ABSENCE.get(
-                rule.id, f"The scraped text is silent on {rule.category}."
-            )
+    for source in corpus:
+        lowered = source.lower()
+        # collect all keyword hit positions, primary keys first then mined
+        positions: list[int] = []
+        for k in keys + mined:
+            start = 0
+            while True:
+                i = lowered.find(k.lower(), start)
+                if i == -1:
+                    break
+                positions.append(i)
+                start = i + 1
+                if len(positions) >= 40:
+                    break
+            if len(positions) >= 40:
+                break
+        if not positions:
+            continue
+        # prefer the earliest non-code window; fall back to earliest overall
+        positions = sorted(set(positions))[:40]
+        chosen: int | None = None
+        for pos in positions:
+            s = max(source.rfind(".", 0, pos), source.rfind("\n", 0, pos)) + 1
+            end_cands = [
+                j for j in (source.find(".", pos), source.find("\n", pos)) if j != -1
+            ]
+            e = min(end_cands) + 1 if end_cands else min(len(source), pos + _MAX_QUOTE)
+            win = source[s:e].strip()
+            if not _is_code_window(win):
+                chosen = pos
+                break
+        if chosen is None:
+            # all hits are code — still try next corpus source first
+            continue
+        start = max(source.rfind(".", 0, chosen), source.rfind("\n", 0, chosen)) + 1
+        end_cands = [
+            j for j in (source.find(".", chosen), source.find("\n", chosen)) if j != -1
+        ]
+        end = min(end_cands) + 1 if end_cands else min(len(source), chosen + _MAX_QUOTE)
+        quote = source[start:end].strip()
+        if len(quote) > _MAX_QUOTE:
+            quote = quote[:_MAX_QUOTE].rsplit(" ", 1)[0] + "…"
+        return quote
 
-    # expand to enclosing sentence boundaries
-    start = max(text.rfind(".", 0, best_pos), text.rfind("\n", 0, best_pos)) + 1
-    end_candidates = [
-        j for j in (text.find(".", best_pos), text.find("\n", best_pos)) if j != -1
-    ]
-    end = min(end_candidates) + 1 if end_candidates else min(len(text), best_pos + _MAX_QUOTE)
-    quote = text[start:end].strip()
-    if len(quote) > _MAX_QUOTE:
-        quote = quote[: _MAX_QUOTE].rsplit(" ", 1)[0] + "…"
-    return quote
+    return _ABSENCE.get(rule.id, f"The scraped text is silent on {rule.category}.")

@@ -12,7 +12,9 @@
       "cnil_cookie_enforcement": "CNIL SAN-2021-023/024 (2021-12-31): Google EUR 150M, Facebook EUR 60M + EUR 100k/day injunction; Conseil d'Etat upheld Google EUR 100M (2020 case) on 2022-01-31",
       "adgm_rulebook_55": "https://en.adgm.thomsonreuters.com/rulebook/55-general-conditions-imposing-administrative-fines",
       "adgm_regulatory_actions": "https://www.adgm.com/operating-in-adgm/office-of-data-protection/regulatory-actions",
-      "adgm_okadoc_penalty": "https://assets.adgm.com/download/assets/Penalty+Notice+1+2024+Okado+Technologies+Limited+Redacted.pdf"
+      "adgm_okadoc_penalty": "https://assets.adgm.com/download/assets/Penalty+Notice+1+2024+Okado+Technologies+Limited+Redacted.pdf",
+      "adgm_transfers_rulebook": "https://en.adgm.thomsonreuters.com/rulebook/42-transfers-subject-appropriate-safeguards",
+      "uae_pdpl_official": "https://uaelegislation.gov.ae/en/legislations/1972"
     },
     "critical_caveats": [
       "UAE PDPL has NO published fine schedule: Art. 26 delegates all penalty amounts to a Cabinet decision that has NOT been issued. Executive Regulations were still unpublished as of 2025-01-06 (DLA Piper). ALL 'default_exposure_calc' AED figures in this file are ANALYST ESTIMATES for demo purposes, not statutory penalties. penalty_framework.basis='estimate' marks them.",
@@ -37,12 +39,13 @@
       "noul_assertion": "The privacy policy fails to state valid consent conditions under UAE PDPL — no provable affirmative consent, or omits the right to withdraw consent easily at any time.",
       "penalty_framework": {
         "type": "administrative_fine",
-        "currency": "AED",
+        "currency": "USD",
         "min_fine": 100000,
         "max_fine": 1000000,
-        "default_exposure_calc": "750000",
-        "basis": "estimate",
-        "note": "PDPL Art. 26 delegates fines to unpublished Cabinet decision; figure is analyst estimate."
+        "basis": "estimated",
+        "note": "PDPL Art. 26 delegates fines to unpublished Cabinet decision; figure is analyst estimate.",
+        "modeled_calc": "min(max(annual_revenue * 0.02, 5000), 150000)",
+        "statutory_max_usd": null
       },
       "severity": "HIGH",
       "evidence": "UAE PDPL Art. 6(1): controller must prove consent; consent request must state right to withdraw; withdrawal allowed 'at any time'.",
@@ -68,8 +71,9 @@
         "uae_min_fine": 50000,
         "uae_max_fine": 500000,
         "uae_currency": "AED",
-        "default_exposure_calc": "350000",
-        "basis": "mixed: DIFC $25k statutory (Schedule 2); UAE amount is estimate"
+        "basis": "estimated",
+        "modeled_calc": "min(max(annual_revenue * 0.01, 2500), 80000)",
+        "statutory_max_usd": null
       },
       "severity": "HIGH",
       "evidence": "DIFC enforcement stats 2025: 717 preliminary notices + 273 decision notices issued — active enforcement regime, unlike UAE mainland.",
@@ -97,8 +101,9 @@
         "uae_min_fine": 250000,
         "uae_max_fine": 5000000,
         "uae_currency": "AED",
-        "default_exposure_calc": "1500000",
-        "basis": "mixed: DIFC ~$50k statutory; UAE range is estimate"
+        "basis": "estimated",
+        "modeled_calc": "min(max(annual_revenue * 0.025, 8000), 250000)",
+        "statutory_max_usd": null
       },
       "severity": "CRITICAL",
       "evidence": "PDPL Art. 13(1)(g) separately requires telling data subjects which safeguards protect cross-border processing — missing transfer clause also breaches information duty.",
@@ -119,11 +124,13 @@
       "noul_assertion": "The policy contains no data breach incident-response clause — no commitment to notify the UAE Data Office or affected users within defined timeframes after unauthorized access.",
       "penalty_framework": {
         "type": "administrative_fine",
-        "currency": "EUR",
+        "currency": "USD",
         "gdpr_max_fixed_fine": 10000000,
         "gdpr_max_turnover_pct": 0.02,
         "uae_note": "UAE fines unpublished (Art. 26); GDPR ceiling applies for EU-facing exposure",
-        "default_exposure_calc": "annual_revenue * 0.02"
+        "modeled_calc": "min(max(annual_revenue * 0.02, 5000), 120000)",
+        "statutory_max_usd": null,
+        "basis": "estimated"
       },
       "severity": "HIGH",
       "evidence": "PDPL Art. 9(1)-(4): controller must notify Bureau per Executive-Regulation period; Bureau verifies cause and imposes Art. 26 penalties on proven violation.",
@@ -147,11 +154,12 @@
       "noul_assertion": "The policy omits an actionable procedure (form, email, or portal plus processing timeframe) for data subjects to exercise UAE PDPL rights — erasure, rectification, restriction, objection.",
       "penalty_framework": {
         "type": "administrative_fine",
-        "currency": "AED",
+        "currency": "USD",
         "min_fine": 50000,
         "max_fine": 500000,
-        "default_exposure_calc": "300000",
-        "basis": "estimate"
+        "basis": "estimated",
+        "modeled_calc": "min(max(annual_revenue * 0.01, 3000), 90000)",
+        "statutory_max_usd": null
       },
       "severity": "MEDIUM",
       "evidence": "PDPL Art. 18 grants objection right specifically against automated processing/profiling — overlaps the AI-transparency check.",
@@ -172,11 +180,12 @@
       "noul_assertion": "The service processes or may process sensitive categories or minors' data but the policy omits explicit-consent/guardian-consent workflows and states no minimum age.",
       "penalty_framework": {
         "type": "administrative_fine",
-        "currency": "AED",
+        "currency": "USD",
         "min_fine": 100000,
         "max_fine": 1000000,
-        "default_exposure_calc": "500000",
-        "basis": "estimate"
+        "basis": "estimated",
+        "modeled_calc": "min(max(annual_revenue * 0.02, 6000), 140000)",
+        "statutory_max_usd": null
       },
       "severity": "HIGH",
       "evidence": "No dedicated UAE PDPL child article — correct prior citation of 'Art. 13' (that article is Right to Obtain Information). Guardian consent derives from Art. 5-6 consent conditions.",
@@ -197,11 +206,12 @@
       "noul_assertion": "The policy fails to disclose whether personal data feeds automated decision-making or profiling, and provides no human-review or objection channel for such decisions.",
       "penalty_framework": {
         "type": "administrative_fine",
-        "currency": "AED",
+        "currency": "USD",
         "min_fine": 50000,
         "max_fine": 500000,
-        "default_exposure_calc": "300000",
-        "basis": "estimate"
+        "basis": "estimated",
+        "modeled_calc": "min(max(annual_revenue * 0.01, 2500), 70000)",
+        "statutory_max_usd": null
       },
       "severity": "MEDIUM",
       "evidence": "PDPL Art. 13(1)(c): right to be informed of 'decisions made based on automated processing, including profiling' — unique UAE hook vs GDPR's narrower Art. 22.",
@@ -222,11 +232,13 @@
       "noul_assertion": "The site or policy fails to provide an equally prominent 1-click 'Reject All' for non-essential cookies, or uses dark patterns such as pre-ticked consent boxes.",
       "penalty_framework": {
         "type": "turnover_or_fixed",
-        "currency": "EUR",
+        "currency": "USD",
         "max_fixed_fine": 20000000,
         "max_turnover_pct": 0.04,
-        "default_exposure_calc": "max(annual_revenue * 0.04, 500000)",
-        "note": "CNIL enforced under national ePrivacy transposition (French DPA Art. 82), not GDPR Art. 83 directly — same consent standard, regulator-controlled procedure."
+        "note": "CNIL enforced under national ePrivacy transposition (French DPA Art. 82), not GDPR Art. 83 directly — same consent standard, regulator-controlled procedure.",
+        "modeled_calc": "min(max(annual_revenue * 0.01, 10000), 300000)",
+        "statutory_max_usd": 20000000,
+        "basis": "statutory"
       },
       "severity": "CRITICAL",
       "evidence": "CNIL 2021-12-31: Google EUR 150M, Facebook EUR 60M for asymmetric reject path (3-5 clicks vs 1) + EUR 100k/day injunction; earlier CNIL 2020: Google EUR 100M, Amazon EUR 35M — upheld by Conseil d'Etat 2022-01-31.",
@@ -246,10 +258,12 @@
       "noul_assertion": "The privacy documentation permits processing on implied consent, opt-out models, or continued browsing without verifiable affirmative action.",
       "penalty_framework": {
         "type": "turnover_or_fixed",
-        "currency": "EUR",
+        "currency": "USD",
         "max_fixed_fine": 20000000,
         "max_turnover_pct": 0.04,
-        "default_exposure_calc": "annual_revenue * 0.04"
+        "modeled_calc": "min(max(annual_revenue * 0.02, 15000), 500000)",
+        "statutory_max_usd": 20000000,
+        "basis": "statutory"
       },
       "severity": "CRITICAL",
       "evidence": "CNIL redacted decision (2023): EUR 40M fine citing Arts. 7, 12, 13, 15, 17, 26 breaches — consent defects compound with other articles in one action.",
@@ -268,10 +282,12 @@
       "noul_assertion": "The service offers EU-facing features but states no age threshold or parental-consent verification for under-16 users.",
       "penalty_framework": {
         "type": "turnover_or_fixed",
-        "currency": "EUR",
+        "currency": "USD",
         "max_fixed_fine": 20000000,
         "max_turnover_pct": 0.04,
-        "default_exposure_calc": "annual_revenue * 0.04"
+        "modeled_calc": "min(max(annual_revenue * 0.015, 8000), 200000)",
+        "statutory_max_usd": 20000000,
+        "basis": "statutory"
       },
       "severity": "HIGH",
       "evidence": "GDPR Art. 8(1): 'at least 16 years old'; MS may lower to >=13. UK lowered to 13; DE/HU/NL kept 16; AT/IT 14.",
@@ -293,9 +309,10 @@
         "type": "administrative_fine",
         "currency": "USD",
         "max_fine": 28000000,
-        "default_exposure_calc": "250000",
         "basis": "statutory",
-        "note": "DPR s.55 caps each Penalty Notice at USD 28M total per contravention set; figure models a mid-severity notice."
+        "note": "DPR s.55 caps each Penalty Notice at USD 28M total per contravention set; figure models a mid-severity notice.",
+        "modeled_calc": "min(max(annual_revenue * 0.03, 20000), 400000)",
+        "statutory_max_usd": 28000000
       },
       "severity": "CRITICAL",
       "evidence": "ADGM enforcement is real: Penalty Notice 1/2024 — Okadoc Technologies (registered at 15-122 WeWork, Hub71 Al Khatem Tower — this venue) fined USD 20,000 for data-subject-rights failures; VentureRock Global received a Direction for Security Principle breaches (June 2023).",
@@ -319,14 +336,65 @@
         "type": "administrative_fine",
         "currency": "USD",
         "max_fine": 28000000,
-        "default_exposure_calc": "100000",
         "basis": "statutory",
-        "note": "Okadoc (Hub71 tenant) was fined USD 20k for rights/policy/cooperation breaches — the floor precedent; cap is USD 28M per s.55."
+        "note": "Okadoc (Hub71 tenant) was fined USD 20k for rights/policy/cooperation breaches — the floor precedent; cap is USD 28M per s.55.",
+        "modeled_calc": "min(max(annual_revenue * 0.015, 10000), 200000)",
+        "statutory_max_usd": 28000000
       },
       "severity": "HIGH",
       "evidence": "Okadoc Penalty Notice (May 2024): USD 20,000 for missing internal DP policy + DSAR handling + non-cooperation — the fined entity sits in Hub71 itself, so 'we're small/a startup' is not a defense.",
       "source_url": "https://www.adgm.com/operating-in-adgm/office-of-data-protection/regulatory-actions",
       "remediation": "If ADGM-registered: adopt a written internal DP policy (s.22), complete the ODP DPO assessment and notify appointment within one month (s.35(4)), and keep the annual Data Protection Fee current (s.56 fixed penalty)."
+    },
+    {
+      "id": "adgm_data_transfers",
+      "category": "Cross-Border Data Governance",
+      "jurisdiction": "ADGM",
+      "law": "ADGM Data Protection Regulations 2021",
+      "articles": [
+        "ADGM DPR s.40",
+        "ADGM DPR s.41",
+        "ADGM DPR s.42",
+        "ADGM DPR s.44"
+      ],
+      "check_description": "For ADGM-registered controllers: personal data may leave ADGM only to jurisdictions on the ODP adequacy list (all EC-adequate jurisdictions auto-included, s.41(3)(b)), or under appropriate safeguards — ADGM SCCs adopted under s.42(2), BCRs (s.43), approved codes/certification (ss.37/39), or s.44 derogations (explicit consent, contract necessity, vital interests).",
+      "noul_assertion": "The policy claims or implies transfers outside ADGM/UAE without naming an adequacy basis, ADGM/EU standard contractual clauses, binding corporate rules, or a s.44 derogation.",
+      "penalty_framework": {
+        "type": "administrative_fine",
+        "currency": "USD",
+        "modeled_calc": "min(max(annual_revenue * 0.025, 20000), 350000)",
+        "statutory_max_usd": 28000000,
+        "basis": "statutory",
+        "note": "s.55 cap USD 28M; modeled at mid-tier — unlawful transfers are among the most-fined violation classes in comparable regimes."
+      },
+      "severity": "HIGH",
+      "evidence": "ADGM ODP guidance Part 6: adequacy list mirrors EC decisions; SCCs are the standard safeguard — absence of any transfer clause is a per-se compliance gap for ADGM entities using overseas processors.",
+      "source_url": "https://en.adgm.thomsonreuters.com/rulebook/42-transfers-subject-appropriate-safeguards",
+      "remediation": "Add a transfer clause naming the mechanism: adequacy jurisdiction list, ADGM SCCs (or EU SCCs + ADGM addendum), or specific s.44 derogation. Map where data actually goes (hosting, processors, analytics)."
+    },
+    {
+      "id": "uae_security_measures",
+      "category": "Security of Processing",
+      "jurisdiction": "UAE",
+      "law": "UAE Federal Decree-Law No. 45/2021 (PDPL)",
+      "articles": [
+        "UAE PDPL Art. 7(1)",
+        "UAE PDPL Art. 20"
+      ],
+      "check_description": "PDPL requires controllers/processors to implement appropriate technical and organisational measures — Art. 20 names encryption, pseudonymisation, confidentiality/integrity/resilience of systems, timely restore capability, and ongoing effectiveness testing.",
+      "noul_assertion": "The policy contains no commitment to technical and organisational security measures (encryption, access control, integrity, testing) for personal data.",
+      "penalty_framework": {
+        "type": "administrative_fine",
+        "currency": "USD",
+        "modeled_calc": "min(max(annual_revenue * 0.02, 8000), 180000)",
+        "statutory_max_usd": null,
+        "basis": "estimated",
+        "note": "PDPL Art. 26 fines set by executive regulations; modeled at UAE mid-tier."
+      },
+      "severity": "HIGH",
+      "evidence": "VentureRock Global (ADGM) received a formal Direction for Security Principle breaches — UAE-regime regulators actively pursue missing security commitments.",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1972",
+      "remediation": "Publish a security-of-processing clause: encryption at rest/in transit, access controls, integrity/availability measures, and periodic effectiveness testing per PDPL Art. 20."
     }
   ]
 }

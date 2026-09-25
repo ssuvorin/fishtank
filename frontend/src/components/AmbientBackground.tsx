@@ -12,7 +12,7 @@ const LINES = [
   { a: 'M-50 520 C 260 450, 520 600, 780 500 S 1220 420, 1500 540', b: 'M-50 540 C 200 600, 500 450, 760 540 S 1160 620, 1500 500' },
   { a: 'M-50 300 C 300 240, 560 380, 820 290 S 1240 220, 1500 310', b: 'M-50 320 C 280 360, 540 230, 800 320 S 1260 360, 1500 280' },
 ]
-const MOTES = 22
+const MOTES = 10
 
 export default function AmbientBackground() {
   const ref = useRef<SVGSVGElement>(null)
@@ -26,7 +26,7 @@ export default function AmbientBackground() {
       ...lines.map((el, i) =>
         animate(el, {
           d: [LINES[i].a, LINES[i].b],
-          duration: 9000 + i * 2400,
+          duration: 14000 + i * 3000,
           ease: 'inOutSine',
           loop: true,
           alternate: true,
@@ -41,7 +41,7 @@ export default function AmbientBackground() {
       animate(motes, {
         translateX: () => utils.random(-60, 60),
         translateY: () => utils.random(-90, -20),
-        opacity: [{ to: () => utils.random(0.25, 0.7, 2) }, { to: 0.05 }],
+        opacity: [{ to: () => utils.random(0.15, 0.4, 2) }, { to: 0.05 }],
         duration: () => utils.random(7000, 13000),
         delay: stagger(260),
         ease: 'inOutSine',
@@ -62,9 +62,9 @@ export default function AmbientBackground() {
     >
       <defs>
         <linearGradient id="ambient-g" x1="0" x2="1">
-          <stop offset="0" stopColor="#f5b544" stopOpacity="0" />
-          <stop offset="0.5" stopColor="#f5b544" stopOpacity="0.55" />
-          <stop offset="1" stopColor="#f08a24" stopOpacity="0" />
+          <stop offset="0" stopColor="#ededef" stopOpacity="0" />
+          <stop offset="0.5" stopColor="#ededef" stopOpacity="0.5" />
+          <stop offset="1" stopColor="#ededef" stopOpacity="0" />
         </linearGradient>
       </defs>
       {LINES.map((l, i) => (

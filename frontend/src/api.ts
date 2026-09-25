@@ -31,6 +31,9 @@ export interface ViolationResult {
    * for compliant items.
    */
   evidence_quote: string
+  /** 'Cap: USD 28M' statutory ceiling label; '' when the regime publishes none. */
+  statutory_label?: string
+
   remediation: string
 }
 
