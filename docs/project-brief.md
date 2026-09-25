@@ -1,8 +1,8 @@
 # PROJECT SPECIFICATION: AI COMPLIANCE & FINANCIAL RISK AUDITOR (DEVIN HUB71)
 
 Track: Security & Governance
-Format: 5-Hour MVP Sprint
-Target Platform: Web App (FastAPI + React Vite)
+Format: In-person hackathon sprint — real build window ~3h (2:00-5:00 PM build, 5:00 PM pitches, 7:00 PM winners). Judges: OpenAI + Cognition + NYUAD. Event: Fish Tank by Devin & Hub71, Sep 25, Hub71, Al Maryah Island, Abu Dhabi (ADGM).
+Target Platform: Web App (FastAPI + React Vite), demo on local laptop — venue Wi-Fi risk means no live deploy dependency.
 
 ## EXECUTIVE SUMMARY & VALUE PROPOSITION
 
@@ -22,7 +22,11 @@ Probability Scoring -> Financial Risk Exposure (Value at Risk in USD/AED) + Acti
 Dual-compliance targeting both European expansion (GDPR) and regional MENA/UAE
 jurisdictions (UAE PDPL & DIFC), quantifying legal exposure into exact currency fines.
 
-## SYSTEM ARCHITECTURE & 5-HOUR WORKFLOW
+## SYSTEM ARCHITECTURE & SPRINT WORKFLOW
+
+DEMO SAFETY: backend supports `DEMO_MODE=1` — serves pre-scraped markdown
+fixtures (fixtures/) instead of live Scrapling calls; Jev/GPT calls are also
+cached per-fixture. Live mode remains for on-stage wow if Wi-Fi holds.
 
 ```
 [User Input: Website URL + Optional Annual Revenue ($5M default)]
@@ -120,30 +124,22 @@ Export Button: Download Executive Action Plan (JSON / PDF).
 - **Check:** Failure to disclose automated decision-making and human opt-out.
 - **Penalty Benchmark:** Up to 500,000 AED.
 
-## 5-HOUR SPRINT TIMELINE
+## BUILD CHECKLIST (build window 2:00-5:00 PM, pitches at 5:00 — pacing is ours to set)
 
-### Hour 0:00 - 1:00 | Ingestion & Vector Setup
+### Backend
 
-- Initialize FastAPI backend.
-- Ingest website content via Scrapling (Fetcher + DynamicFetcher fallback, markdownify to text).
-- Load in-memory legal knowledge base with the 8 core articles.
+- FastAPI `/api/v1/audit`: Scrapling fetch (privacy link discovery, markdownify) OR fixture when `DEMO_MODE=1`.
+- law.json loaded as rule set; one batched Jev call (`/api/alpha/decisions`, `~typesafe/jev-latest`, `noul` per rule) over scraped text.
+- Deterministic VaR: `exposure = default_exposure_calc * noul`; turnover rules scale with revenue input.
+- GPT-6 Sol (`~openai/gpt-sol-latest` via OR chat) generates exec briefing + remediation patch list; cached per fixture.
 
-### Hour 1:00 - 2:30 | Probability Engine & Scoring
+### Frontend
 
-- Connect OpenRouter decisions endpoint (`/api/alpha/decisions`, model `~typesafe/jev-latest`) for calibrated probability extraction (batched `noul` questions).
-- Pipe calibrated probabilities into GPT prompt for monetary liability calculation.
-- Expose single `/api/v1/audit` endpoint.
+- Hero URL input, animated scan stages, big exposure callout (USD + AED at 3.673 peg).
+- Severity grid (High/Medium/Low) with evidence quotes + article citations; Export Action Plan (JSON/PDF).
 
-### Hour 2:30 - 4:00 | React Frontend Development
+### Demo prep (before 5:00 PM)
 
-- Hero search bar with animated scanning stages ("Fetching DOM", "Checking UAE PDPL").
-- Large financial risk callout (e.g. "$485,000 Potential Penalty").
-- Breakdown cards displaying violations, evidence quotes, and legal articles.
-
-### Hour 4:00 - 5:00 | Testing, Deployment & Demo Prep
-
-- Deploy backend & frontend (Render / Vercel).
-- Run test scans against 2 real websites:
-  - High-risk target (typical startup with basic cookie banner).
-  - Compliant target (major UAE institutional bank).
-- Rehearse 3-minute stage pitch for Hub71 Fish Tank judges.
+- Pre-scrape 2 fixtures (high-risk startup + major UAE institutional bank) so `DEMO_MODE=1` works with zero network.
+- Full pass on laptop; verify export works offline.
+- 3-min pitch: hook = "compliance as a CFO number", live demo if Wi-Fi holds else `DEMO_MODE=1`; close on UAE-first law coverage + real DIFC/CNIL enforcement stats.
