@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useRef } from 'react'
+import { animate } from 'animejs'
 import type { AuditResponse, ViolationResult } from '../api'
 import { basisKind, fmtAed, fmtUsd } from '../format'
+import { prefersReducedMotion } from '../motion'
 
 interface Props {
   result: AuditResponse
@@ -20,30 +22,6 @@ function worstBasis(violations: ViolationResult[]): 'statutory' | 'mixed' | 'est
   return rank === 1 ? 'mixed' : 'estimate'
 }
 
-/** Eased 0→1 progress over `ms`, restarted whenever `key` changes. */
-function useCountUp(key: unknown, ms = 1600): number {
-  const [t, setT] = useState(0)
-  useEffect(() => {
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-      setT(1)
-      return
-    }
-    setT(0)
-    let raf = 0
-    const start = performance.now()
-    const frame = (now: number) => {
-      const p = Math.min(1, (now - start) / ms)
-      setT(1 - Math.pow(1 - p, 4)) // easeOutQuart
-      if (p < 1) raf = requestAnimationFrame(frame)
-    }
-    raf = requestAnimationFrame(frame)
-    return () => cancelAnimationFrame(raf)
-  }, [key, ms])
-  return t
-}
-
-const SEV_KEYS = ['CRITICAL', 'HIGH', 'MEDIUM'] as const
-
 export default function ExposureCallout({ result }: Props) {
   const { exposure, violations, revenue_used, revenue_assumed, limited_coverage } =
     result
@@ -55,14 +33,42 @@ export default function ExposureCallout({ result }: Props) {
       : basis === 'mixed'
         ? 'statutory + analyst-estimated components'
         : 'analyst estimates — UAE PDPL fine schedule unpublished'
-  const t = useCountUp(result)
+  const usdRef = useRef<HTMLDivElement>(null)
+  const aedRef = useRef<HTMLDivElement>(null)
 
-  const sevTotals = SEV_KEYS.map((sev) => ({
-    sev,
-    usd: flagged.filter((v) => v.severity === sev).reduce((s, v) => s + v.exposure_usd, 0),
-    count: flagged.filter((v) => v.severity === sev).length,
-  }))
-  const sevSum = sevTotals.reduce((s, x) => s + x.usd, 0)
+  // anime.js count-up: tween a plain object and write text directly — no
+  // React re-render per frame.
+  useLayoutEffect(() => {
+    const usdEl = usdRef.current
+    const aedEl = aedRef.current
+    if (!usdEl || !aedEl) return
+    const paint = (k: number) => {
+      usdEl.textContent = fmtUsd(Math.round(exposure.usd * k))
+      aedEl.textContent = `≈ ${fmtAed(Math.round(exposure.aed * k))}`
+    }
+    if (prefersReducedMotion()) {
+      paint(1)
+      return
+    }
+    const state = { k: 0 }
+    paint(0)
+    const anim = animate(state, {
+      k: 1,
+      duration: 2000,
+      delay: 150,
+      ease: 'outExpo',
+      onUpdate: () => paint(state.k),
+    })
+    return () => {
+      anim.cancel()
+    }
+  }, [exposure.usd, exposure.aed])
+
+  const ratio = revenue_used > 0 ? exposure.usd / revenue_used : 0
+  const top = flagged.reduce<ViolationResult | null>(
+    (m, v) => (m && m.exposure_usd >= v.exposure_usd ? m : v),
+    null,
+  )
 
   return (
     <section className={`hero hero--${basis}`}>
@@ -74,41 +80,26 @@ export default function ExposureCallout({ result }: Props) {
             {basisText}
           </span>
         </div>
-        <div className="hero__usd" aria-label={fmtUsd(exposure.usd)}>
-          {fmtUsd(Math.round(exposure.usd * t))}
-        </div>
-        <div className="hero__aed">
-          ≈ {fmtAed(Math.round(exposure.aed * t))}
-        </div>
-
-        {sevSum > 0 && (
-          <div className="hero__split">
-            <div className="hero__split-bar" aria-hidden>
-              {sevTotals.map(
-                (x) =>
-                  x.usd > 0 && (
-                    <span
-                      key={x.sev}
-                      className={`hero__split-seg sev-bg--${x.sev.toLowerCase()}`}
-                      style={{ flexGrow: x.usd }}
-                    />
-                  ),
-              )}
-            </div>
-            <ul className="hero__split-legend">
-              {sevTotals.map(
-                (x) =>
-                  x.count > 0 && (
-                    <li key={x.sev}>
-                      <span className={`dot sev-bg--${x.sev.toLowerCase()}`} aria-hidden />
-                      <span className="hero__split-sev">{x.sev}</span>
-                      <span className="mono">{fmtUsd(x.usd)}</span>
-                    </li>
-                  ),
-              )}
-            </ul>
-          </div>
+        {/* Text is owned by the count-up effect (painted before first frame). */}
+        <div className="hero__usd" ref={usdRef} aria-label={fmtUsd(exposure.usd)} />
+        <div className="hero__aed" ref={aedRef} />
+        {flagged.length > 0 && revenue_used > 0 && (
+          <p className="hero__meaning">
+            <strong>
+              ≈ {ratio < 0.001 ? '<0.1' : (ratio * 100).toFixed(ratio < 0.1 ? 1 : 0)}% of{' '}
+              {revenue_assumed ? 'assumed' : 'declared'} annual revenue
+            </strong>{' '}
+            at regulatory risk
+            {top && (
+              <>
+                {' '}
+                — largest single driver: <em>{top.category}</em> ({fmtUsd(top.exposure_usd)})
+              </>
+            )}
+            .
+          </p>
         )}
+
       </div>
 
       <dl className="hero__stats">

@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { animate } from 'animejs'
+import { prefersReducedMotion, useStaggerIn } from '../motion'
 
 /**
  * Cosmetic stage indicator. The backend is a single POST — these stages are
@@ -35,6 +37,8 @@ const STAGES: { key: string; title: string; detail: string; until: number }[] = 
 
 export default function ScanStages() {
   const [elapsed, setElapsed] = useState(0)
+  const ref = useRef<HTMLElement>(null)
+  useStaggerIn(ref, '.step, .skeleton', [], { step: 90, distance: 12 })
 
   useEffect(() => {
     const t0 = Date.now()
@@ -46,8 +50,22 @@ export default function ScanStages() {
   // Asymptotic cosmetic bar: tracks the heuristic stage windows, never hits 100%.
   const progress = Math.min(96, (1 - Math.exp(-elapsed / 28)) * 100)
 
+  // Stage transition: pop the newly active node.
+  useLayoutEffect(() => {
+    const node = ref.current?.querySelectorAll('.step__node')[activeIdx]
+    if (!node || prefersReducedMotion()) return
+    const a = animate(node, {
+      scale: [0.6, 1],
+      duration: 700,
+      ease: 'outElastic(1, .6)',
+    })
+    return () => {
+      a.revert()
+    }
+  }, [activeIdx])
+
   return (
-    <section className="scan" role="status" aria-live="polite">
+    <section className="scan" role="status" aria-live="polite" ref={ref}>
       <header className="scan__head">
         <div className="scan__title">
           <span className="scan__pulse" aria-hidden />

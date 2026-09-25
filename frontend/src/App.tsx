@@ -7,6 +7,11 @@ import ExposureCallout from './components/ExposureCallout'
 import ViolationGrid from './components/ViolationGrid'
 import BriefingPanel from './components/BriefingPanel'
 import ExportButton from './components/ExportButton'
+import ExposureInsights from './components/ExposureInsights'
+import { FixReportButton } from './components/FixPrompt'
+import RegulatorStrip from './components/RegulatorStrip'
+import AmbientBackground from './components/AmbientBackground'
+import { hostOf } from './format'
 
 type Phase =
   | { kind: 'idle' }
@@ -42,14 +47,6 @@ function LogoMark() {
       />
     </svg>
   )
-}
-
-function hostOf(url: string): string {
-  try {
-    return new URL(url).hostname
-  } catch {
-    return url
-  }
 }
 
 export default function App() {
@@ -97,7 +94,9 @@ export default function App() {
   return (
     <div className="shell">
       <div className="shell__glow" aria-hidden />
+      <AmbientBackground />
       <header className="topbar">
+        <span className="uae-bar uae-bar--edge" aria-hidden />
         <div className="topbar__inner">
           <div className="brand">
             <LogoMark />
@@ -142,6 +141,7 @@ export default function App() {
               ))}
             </ul>
           )}
+          {phase.kind === 'idle' && <RegulatorStrip variant="intro" />}
         </section>
 
         {phase.kind === 'loading' && (
@@ -189,24 +189,38 @@ export default function App() {
                 {phase.result.pages_scraped.length} page
                 {phase.result.pages_scraped.length === 1 ? '' : 's'} analysed
               </span>
+              <span className="results__cta">
+                <FixReportButton result={phase.result} />
+              </span>
             </div>
             <ExposureCallout result={phase.result} />
-            <ViolationGrid violations={phase.result.violations} />
+            <ExposureInsights result={phase.result} />
+            <ViolationGrid violations={phase.result.violations} url={phase.result.url} />
             <BriefingPanel briefing_md={phase.result.briefing_md} />
           </div>
         )}
       </main>
 
       <footer className="footer">
+        <div className="footer__regs">
+          <RegulatorStrip variant="footer" />
+        </div>
         <div className="footer__inner">
           <span className="footer__mark">
             <LogoMark /> ComplyRisk AI
           </span>
-          <p className="footer__disclaimer">
-            Screening signal for prioritization — not legal advice. Figures are
-            modeled exposure: statutory frameworks where published, analyst
-            estimates where not. AED at the fixed 3.673 peg.
-          </p>
+          <div className="footer__text">
+            <p className="footer__built">
+              <span className="uae-bar" aria-hidden />
+              Built for UAE compliance — PDPL &amp; DIFC first, EU GDPR as expansion risk.
+            </p>
+            <p className="footer__disclaimer">
+              Screening signal for prioritization — not legal advice. Figures are
+              modeled exposure: statutory frameworks where published, analyst
+              estimates where not. AED at the fixed 3.673 peg. Regulator names are
+              references only; no affiliation or endorsement implied.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

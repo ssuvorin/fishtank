@@ -1,5 +1,9 @@
+import { useRef } from 'react'
 import type { Severity, ViolationResult } from '../api'
-import { basisKind, basisLabel, fmtAed, fmtUsd } from '../format'
+import { basisKind, basisLabel, fmtAed, fmtUsd, isAbsenceStatement } from '../format'
+import { useStaggerIn } from '../motion'
+import { FixViolationButton } from './FixPrompt'
+import JurisdictionTags from './JurisdictionTag'
 
 const SEVERITY_ORDER: Severity[] = ['CRITICAL', 'HIGH', 'MEDIUM']
 
@@ -9,29 +13,17 @@ const SEVERITY_BLURB: Record<Severity, string> = {
   MEDIUM: 'Monitor & tidy up',
 }
 
-function isAbsenceStatement(quote: string): boolean {
-  const q = quote.trim().toLowerCase()
-  return (
-    q.startsWith('the policy omits') ||
-    q.startsWith('no ') && q.includes('found') ||
-    q.includes('omits ') ||
-    q.includes('not found')
-  )
-}
-
-function ViolationCard({ v, index }: { v: ViolationResult; index: number }) {
+function ViolationCard({ v, url }: { v: ViolationResult; url: string }) {
   const kind = basisKind(v.basis)
   const absent = !v.flagged || isAbsenceStatement(v.evidence_quote)
   const pct = Math.round(v.probability * 100)
   return (
-    <article
-      className={`v-card v-card--${v.severity.toLowerCase()}`}
-      style={{ animationDelay: `${index * 60}ms` }}
-    >
+    <article className={`v-card v-card--${v.severity.toLowerCase()}`}>
       <header className="v-card__head">
         <div className="v-card__titles">
           <span className="v-card__category">{v.category}</span>
           <span className="v-card__law">{v.law}</span>
+          <JurisdictionTags law={v.law} />
         </div>
         <span className={`badge badge--${kind}`} title={v.basis}>
           <span className="badge__dot" aria-hidden />
@@ -91,21 +83,30 @@ function ViolationCard({ v, index }: { v: ViolationResult; index: number }) {
         </span>
         <p>{v.remediation}</p>
       </div>
+
+      {v.flagged && (
+        <div className="v-card__actions">
+          <FixViolationButton v={v} url={url} />
+        </div>
+      )}
     </article>
   )
 }
 
 export default function ViolationGrid({
   violations,
+  url,
 }: {
   violations: ViolationResult[]
+  url: string
 }) {
   const flagged = violations.filter((v) => v.flagged)
   const compliant = violations.filter((v) => !v.flagged)
-  let cardIndex = 0
+  const ref = useRef<HTMLElement>(null)
+  useStaggerIn(ref, '.sev-group__head, .v-card', [violations], { step: 75, start: 250 })
 
   return (
-    <section className="violations">
+    <section className="violations" ref={ref}>
       <header className="section-head">
         <h2 className="section-head__title">Findings</h2>
         <span className="section-head__meta">
@@ -142,7 +143,7 @@ export default function ViolationGrid({
             </h3>
             <div className="v-grid">
               {group.map((v) => (
-                <ViolationCard key={v.id} v={v} index={cardIndex++} />
+                <ViolationCard key={v.id} v={v} url={url} />
               ))}
             </div>
           </div>
