@@ -57,7 +57,7 @@ test("report, evidence, safe links and complete offline export", async ({
     page.getByRole("link", { name: "Open evidence source" }).first(),
   ).toHaveAttribute("href", report.pages_scraped[0]);
   await expect(page.locator('a[href^="javascript:"]')).toHaveCount(0);
-  await page.getByText("Executive briefing", { exact: true }).click();
+  await page.getByText("Auditor’s briefing", { exact: true }).click();
   await expect(page.locator(".briefing-text")).toContainText(
     "Review the consent wording.",
   );
@@ -143,4 +143,21 @@ test("mobile form and results fit viewport; supplied revenue is sent", async ({
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+});
+
+test("ElevenLabs scan display respects reduced motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.route("**/api/v1/audit", () => {});
+  await page.goto("/");
+  await page.getByLabel("Website to audit").fill(report.url);
+  await page.getByRole("button", { name: "Run audit" }).click();
+  await expect(page.getByRole("status")).toContainText(
+    "Reading the fine print.",
+  );
+  await expect(page.locator(".eleven-matrix")).toBeVisible();
+  await expect(page.locator(".eleven-matrix")).not.toHaveAttribute(
+    "data-animating",
+    "true",
+  );
+  await page.getByRole("button", { name: "Cancel audit" }).click();
 });
