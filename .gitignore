@@ -16,3 +16,8 @@ dist/
 
 # OS
 .DS_Store
+
+# Frontend verification
+*.tsbuildinfo
+playwright-report/
+test-results/

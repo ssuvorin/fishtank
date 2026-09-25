@@ -79,7 +79,7 @@ Single endpoint of the ComplyRisk AI backend. Everything the frontend needs is i
 | `revenue_assumed` | bool | `true` when the USD 5,000,000 default was applied — UI must display "assumed" label. |
 | `limited_coverage` | bool | `true` when the privacy page was not found/blocked or text extraction was partial; audit still completed on available text (FR-014). UI renders a coverage notice; affected `evidence_quote`s use absence statements. |
 | `exposure.usd` / `exposure.aed` | number | Total modeled legal exposure — sum of `exposure_usd` over **flagged** violations; `aed = usd × 3.673` (fixed peg, not a live FX rate). |
-| `violations` | list | **All 10 rule results** — one per `law.json` rule, none silently omitted (FR-004, SC-002). Ordered `severity` (CRITICAL → HIGH → MEDIUM) then `probability` desc. `flagged: false` items are the compliant rows of the verdict list. |
+| `violations` | list | **All 10 rule results** — one per `law.json` rule, none silently omitted (FR-004, SC-002). Ordered `severity` (CRITICAL → HIGH → MEDIUM) then `probability` desc. `flagged: false` items are the not-flagged rows of the verdict list, not confirmation of compliance. |
 | `briefing_md` | string | Executive briefing + prioritized remediation list in Markdown (the Action Plan narrative). Grounded in the actual results; contains no violations, articles, or figures not present in `violations`/`exposure` (Principle II). Client-side export = this field plus the rest of the payload serialized to JSON. |
 
 ### `violations[]` item schema
@@ -92,11 +92,11 @@ Single endpoint of the ComplyRisk AI backend. Everything the frontend needs is i
 | `articles` | list[string] | yes | Exact article citations from `law.json` — never generated (Principle II). |
 | `probability` | number 0–1 | yes | Calibrated Jev `noul` answer — live, per-request. |
 | `flagged` | bool | yes | `probability >= 0.5`. Only flagged items render as violation cards and contribute to `exposure`. |
-| `exposure_usd` | number | yes | `resolved_default_exposure_calc × probability` for flagged items; `0` for compliant items. Deterministic backend math — the LLM never computes numbers. |
+| `exposure_usd` | number | yes | `resolved_default_exposure_calc × probability` for flagged items; `0` for not-flagged items. Deterministic backend math — the LLM never computes numbers. |
 | `exposure_aed` | number | yes | `exposure_usd × 3.673`. |
 | `severity` | `"CRITICAL"\|"HIGH"\|"MEDIUM"` | yes | From the rule; drives ordering. |
 | `basis` | string | yes | `penalty_framework.basis` **passthrough verbatim** — `"estimate"`, statutory marker, or `"mixed: …"`. UI renders as provenance badge; estimates are never presented as statutory fines (Principle V). |
-| `evidence_quote` | string | yes when `flagged`; otherwise best-effort | **Verbatim substring** of the scraped text, or an explicit absence statement (`"The policy omits a named DPO contact."`) where the document is silent. Never synthesized (FR-008, Principle II). For compliant items, the supporting quote when found, else `""`. |
+| `evidence_quote` | string | yes when `flagged`; otherwise best-effort | **Verbatim substring** of the scraped text, or an explicit absence statement (`"The policy omits a named DPO contact."`) where the document is silent. Never synthesized (FR-008, Principle II). For not-flagged items, the supporting quote when found, else `""`. |
 | `remediation` | string | yes | Concrete remediation step sourced from the rule's `remediation` field (paraphrase allowed, invention prohibited). |
 
 ## Error responses
@@ -123,4 +123,16 @@ Notes:
 
 ## Export (Executive Action Plan)
 
-No server endpoint. The frontend's Export button serializes the 200 payload — `{ url, revenue_used, exposure, violations, briefing_md }` plus `exported_at` — to a `.json` download (FR-010, US3). Guaranteed valid JSON because it is the already-parsed response.
+No server endpoint. The frontend's Export button serializes the 200 payload — the **entire response**, including `pages_scraped`, `limited_coverage`, `revenue_assumed`, and any additional source metadata, plus `exported_at` — to a `.json` download (FR-010, US3). Guaranteed valid JSON because it is the already-parsed response.
+
+## Additive evidence metadata (frontend review)
+
+The frontend accepts these optional per-finding fields without blocking the current backend implementation:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `source_url` | string | The scraped page supporting this finding; not the rule's legal source. |
+| `legal_source_url` | string | The primary legal source copied from `Rule.source_url`. |
+| `evidence_kind` | `"quote"` or `"absence"` | Distinguishes a verbatim excerpt from an absence observation. |
+
+Without these fields, the UI labels evidence generically and explicitly says its per-finding source is unavailable. It does not invent a page attribution or format an absence statement as a verified quotation. All optional metadata is preserved in export.
