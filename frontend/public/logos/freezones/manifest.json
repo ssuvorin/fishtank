@@ -1,0 +1,146 @@
+{
+  "_note": "Логотипы свободных экономических зон ОАЭ. theme: on-light — для светлого фона, on-dark — белый/светлый вариант для тёмного фона. data_protection: какой режим защиты данных действует в зоне; UAE PDPL не применяется в зонах со своим законом о данных (DIFC, ADGM; DHCC — для медицинских данных).",
+  "zones": [
+    {
+      "id": "difc",
+      "name": "Dubai International Financial Centre",
+      "short": "DIFC",
+      "emirate": "Dubai",
+      "data_protection": "DIFC Data Protection Law No. 5 of 2020",
+      "own_data_protection_law": true,
+      "files": [
+        { "path": "difc.png", "theme": "on-light", "source": "https://commons.wikimedia.org/wiki/File:Dubai_International_Financial_Centre_logo.png" },
+        { "path": "difc-white.png", "theme": "on-dark", "source": "https://www.difc.com/" }
+      ]
+    },
+    {
+      "id": "adgm",
+      "name": "Abu Dhabi Global Market",
+      "short": "ADGM",
+      "emirate": "Abu Dhabi",
+      "data_protection": "ADGM Data Protection Regulations 2021",
+      "own_data_protection_law": true,
+      "files": [{ "path": "adgm-white.svg", "theme": "on-dark", "source": "https://www.adgm.com/" }]
+    },
+    {
+      "id": "dhcc",
+      "name": "Dubai Healthcare City",
+      "short": "DHCC",
+      "emirate": "Dubai",
+      "data_protection": "DHCC Health Data Protection Regulation No. 7 of 2013 (health data)",
+      "own_data_protection_law": true,
+      "files": [{ "path": "dhcc-white.svg", "theme": "on-dark", "source": "https://www.dhcc.ae/" }]
+    },
+    {
+      "id": "dmcc",
+      "name": "Dubai Multi Commodities Centre",
+      "short": "DMCC",
+      "emirate": "Dubai",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [{ "path": "dmcc.svg", "theme": "on-light", "source": "https://dmcc.ae/" }]
+    },
+    {
+      "id": "jafza",
+      "name": "Jebel Ali Free Zone",
+      "short": "JAFZA",
+      "emirate": "Dubai",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [{ "path": "jafza-white.svg", "theme": "on-dark", "source": "https://www.jafza.ae/" }]
+    },
+    {
+      "id": "dafz",
+      "name": "Dubai Airport Freezone",
+      "short": "DAFZ",
+      "emirate": "Dubai",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [{ "path": "dafz.svg", "theme": "on-light", "source": "https://en.wikipedia.org/wiki/File:Dubai_Airport_Freezone_Logo.svg" }]
+    },
+    {
+      "id": "dubai-south",
+      "name": "Dubai South",
+      "short": "Dubai South",
+      "emirate": "Dubai",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [{ "path": "dubai-south.svg", "theme": "on-light", "source": "https://www.dubaisouth.ae/" }]
+    },
+    {
+      "id": "dso",
+      "name": "Dubai Silicon Oasis",
+      "short": "DSO",
+      "emirate": "Dubai",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [{ "path": "dso-white.svg", "theme": "on-dark", "source": "https://www.dso.ae/" }]
+    },
+    {
+      "id": "dubai-internet-city",
+      "name": "Dubai Internet City",
+      "short": "DIC",
+      "emirate": "Dubai",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [{ "path": "dubai-internet-city.png", "theme": "on-light", "source": "https://dic.ae/" }]
+    },
+    {
+      "id": "meydan-fz",
+      "name": "Meydan Free Zone",
+      "short": "Meydan FZ",
+      "emirate": "Dubai",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [
+        { "path": "meydan-fz.webp", "theme": "on-light", "source": "https://www.meydanfz.ae/" },
+        { "path": "meydan-fz-white.webp", "theme": "on-dark", "source": "https://www.meydanfz.ae/" }
+      ]
+    },
+    {
+      "id": "ifza",
+      "name": "International Free Zone Authority",
+      "short": "IFZA",
+      "emirate": "Dubai",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [{ "path": "ifza-white.png", "theme": "on-dark", "source": "https://ifza.com/" }]
+    },
+    {
+      "id": "masdar-city",
+      "name": "Masdar City Free Zone",
+      "short": "Masdar City",
+      "emirate": "Abu Dhabi",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [{ "path": "masdar-city-white.svg", "theme": "on-dark", "source": "https://masdarcity.ae/" }]
+    },
+    {
+      "id": "twofour54",
+      "name": "twofour54 Abu Dhabi",
+      "short": "twofour54",
+      "emirate": "Abu Dhabi",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [{ "path": "twofour54-white.svg", "theme": "on-dark", "source": "https://www.twofour54.com/" }]
+    },
+    {
+      "id": "rakez",
+      "name": "Ras Al Khaimah Economic Zone",
+      "short": "RAKEZ",
+      "emirate": "Ras Al Khaimah",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [{ "path": "rakez.svg", "theme": "on-light", "source": "https://rakez.com/" }]
+    },
+    {
+      "id": "shams",
+      "name": "Sharjah Media City",
+      "short": "Shams",
+      "emirate": "Sharjah",
+      "data_protection": "UAE PDPL (Federal Decree-Law No. 45/2021)",
+      "own_data_protection_law": false,
+      "files": [{ "path": "shams.png", "theme": "on-light", "source": "https://www.shams.ae/" }]
+    }
+  ]
+}
