@@ -24,7 +24,6 @@ description: "Task list for ComplyRisk AI — 001-compliance-risk-audit"
 - **Backend**: `backend/app/` (FastAPI, py3.12; compose service `api:8000` runs `uvicorn app.main:app`)
 - **Frontend**: `frontend/src/` (React + Vite + TS; compose service `web:5173`, `VITE_API_URL=http://localhost:8000`)
 - **Knowledge base**: `law.json` at repo root (mounted/read by the backend)
-- **Fixtures**: `backend/fixtures/` for `DEMO_MODE=1` pre-scraped markdown (transport fallback only — Jev/VaR still run live per constitution Principle I)
 
 ---
 
@@ -65,13 +64,12 @@ description: "Task list for ComplyRisk AI — 001-compliance-risk-audit"
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] Implement scraper service in `backend/app/services/scraper.py` (new `backend/app/services/__init__.py`): `scrape_site(url) -> list[ScrapedDocument]` — fetch landing page with scrapling `Fetcher`; discover privacy-policy link via anchor href/text matching (`/privacy`, `privacy-policy`, `data-protection`, `privacy-notice`, same-origin only); fetch privacy page; convert bodies to text with `markdownify`; fall back to `DynamicFetcher` when static text is boilerplate/too short (FR-003); if `DEMO_MODE=1`, load `backend/fixtures/<slug>.md` instead of fetching (transport fallback ONLY — scoring stays live, Principle I); populate `coverage_notes` when privacy page missing (FR-014); bounded by fetch timeout (FR-012); HTTPS only, refuse non-http(s) (constitution Security)
+- [ ] T010 [US1] Implement scraper service in `backend/app/services/scraper.py` (new `backend/app/services/__init__.py`): `scrape_site(url) -> list[ScrapedDocument]` — fetch landing page with scrapling `Fetcher`; discover privacy-policy link via anchor href/text matching (`/privacy`, `privacy-policy`, `data-protection`, `privacy-notice`, same-origin only); fetch privacy page; convert bodies to text with `markdownify`; fall back to `DynamicFetcher` when static text is boilerplate/too short (FR-003); populate `coverage_notes` when privacy page missing (FR-014); bounded by fetch timeout (FR-012); HTTPS only, refuse non-http(s) (constitution Security)
 - [ ] T011 [P] [US1] Implement evidence extraction in `backend/app/services/evidence.py`: `extract_evidence(rule: Rule, text: str) -> str` — pull a verbatim quote (≤ 300 chars) from the scraped text matching the rule's evidentiary keywords, or return an absence statement ("the policy omits X") when the document is silent — never fabricate a quote (Principle II)
 - [ ] T012 [US1] Implement scoring service in `backend/app/services/scoring.py`: `score_rules(rules, policy_text) -> dict[str, float]` — build ONE batched `questions` map `{rule.id: rule.noul_assertion}` over the concatenated scraped text (`state`), call `jev_decisions` once per audit (constitution Budget: no per-rule calls, no prompt-retries), return calibrated `noul ∈ [0,1]` per rule id; on failure raise `ScoringUnavailableError` — never fabricate probabilities (FR-005)
 - [ ] T013 [US1] Implement exposure calculator in `backend/app/services/exposure.py`: `compute_exposure(rule, noul, annual_revenue) -> tuple[float, str]` — `exposure_usd = default_exposure_calc × noul`; where `penalty_framework` is turnover-scaled (e.g. GDPR 4%/2% turnover rules), resolve `default_exposure_calc` against `annual_revenue` (default 5,000,000); AED rules convert `× 3.673` fixed peg into USD-equivalent before summing; return both USD figure and the `basis` label (`statutory`/`estimate`/`mixed`) so Principle V provenance is preserved in `ViolationResult`
 - [ ] T014 [US1] Implement audit orchestrator in `backend/app/services/audit.py`: `run_audit(request) -> AuditResponse` — scrape → concat text → `score_rules` → per-rule `compute_exposure` + `extract_evidence` → build `ViolationResult` (flagged if probability ≥ 0.5, else compliant/not-listed per spec US2 scenario 2) → sum `ExposureSummary {usd, aed: usd×3.673, by_severity counts}` → assemble `AuditResponse` with `pages_scraped`, `evidence_coverage`, and placeholder `briefing_md` (filled in Phase 5); annotate reduced evidence coverage per FR-014
 - [ ] T015 [US1] Wire the pipeline in `backend/app/routers/audit.py`: route calls `run_audit`; map `ScoringUnavailableError` → 503 retryable error (degraded result, never fabricated scores per spec edge case); map scrape errors → distinct 4xx/502 bodies; guarantee end-to-end < 90s for a normal site (FR-012)
-- [ ] T016 [P] [US1] Pre-scrape `DEMO_MODE=1` fixtures into `backend/fixtures/`: one high-risk startup, one major UAE institutional bank (per constitution Demo safety) — markdown files named by URL slug, loaded by `scrape_site` in demo mode
 
 **Checkpoint**: User Story 1 is fully functional and testable independently — a real URL returns a quantified exposure figure in USD + AED with all 10 rules scored live. **This is the MVP; STOP and validate before continuing.**
 
@@ -116,9 +114,9 @@ description: "Task list for ComplyRisk AI — 001-compliance-risk-audit"
 
 **Purpose**: Pitch-readiness pass across all stories.
 
-- [ ] T026 [P] Write `README.md` run steps at repo root: `OPENROUTER_API_KEY` setup, `docker compose up`, bare-metal (`uvicorn app.main:app` + `npm run dev`), `DEMO_MODE=1` usage, the two pre-scraped demo targets, and the API contract (`POST /api/v1/audit` request/response shape)
+- [ ] T026 [P] Write `README.md` run steps at repo root: `OPENROUTER_API_KEY` setup, `docker compose up`, bare-metal (`uvicorn app.main:app` + `npm run dev`), the API contract (`POST /api/v1/audit` request/response shape)
 - [ ] T027 [P] Pitch-ready UI pass on `frontend/src/index.css` + `frontend/src/App.tsx`: consistent severity colors, readable currency formatting, disclaimer visible, laptop-screen demo legibility
-- [ ] T028 End-to-end verification on laptop: one live audit + one `DEMO_MODE=1` audit (both demo fixtures), export works with zero network, full audit < 90s (SC-001, constitution Governance acceptance review)
+- [ ] T028 End-to-end verification on laptop: one live audit end-to-end, export produces valid JSON, full audit < 90s (SC-001, constitution Governance acceptance review)
 - [ ] T029 Verify `.env` hygiene and secrets: `backend/.env` gitignored, key never committed, compose env defaults match constitution Principle IV
 
 ---
@@ -157,9 +155,8 @@ description: "Task list for ComplyRisk AI — 001-compliance-risk-audit"
 ## Parallel Example: User Story 1
 
 ```bash
-# After T010 lands, evidence extraction and fixtures are disjoint:
+# After T010 lands, evidence extraction and scoring are disjoint:
 Task: "Implement evidence extraction in backend/app/services/evidence.py"
-Task: "Pre-scrape DEMO_MODE fixtures into backend/fixtures/"
 
 # US2 + US3 in parallel after US1 pipeline works:
 Task: "Implement ViolationGrid in frontend/src/components/ViolationGrid.tsx"
@@ -182,7 +179,7 @@ Task: "Implement briefing service in backend/app/services/briefing.py"
 2. US1 → validate via curl → MVP demo ready
 3. US2 → browser check → full dashboard demo
 4. US3 → export check → take-away artifact demo
-5. Polish → pitch walkthrough: live audit + `DEMO_MODE=1` fallback per constitution Governance
+5. Polish → pitch walkthrough: live audit on-stage per constitution
 
 ### Sprint Notes (hackathon window ~3h)
 

@@ -52,15 +52,6 @@ npm run dev
 
 Open http://localhost:5173.
 
-### Option C — Offline demo (venue Wi-Fi fallback)
-
-```bash
-DEMO_MODE=1 docker compose up --build
-# or bare metal:
-cd backend && DEMO_MODE=1 uvicorn app.main:app --reload --port 8000
-```
-
-`DEMO_MODE=1` serves pre-scraped markdown fixtures (a high-risk startup and a major UAE institutional bank) instead of live Scrapling fetches — the Jev scoring, VaR math, and GPT-6 Sol briefing still run **live** against the fixture text. URLs matching the two fixture targets resolve to their fixtures.
 
 ## 3. Smoke test
 

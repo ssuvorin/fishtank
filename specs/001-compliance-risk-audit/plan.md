@@ -20,7 +20,7 @@ Technical approach: a FastAPI backend orchestrates one request-scoped pipeline �
 
 **Storage**: N/A — no database, no persistence. `law.json` is read at startup; all audit state is request-scoped in-memory and discarded after response (FR-013).
 
-**Testing**: pytest smoke/integration for the scoring pipeline (live or fixture-text); manual/browser verification of the dashboard. No heavyweight test scaffolding in the sprint window.
+**Testing**: pytest smoke/integration for the scoring pipeline (live-text); manual/browser verification of the dashboard. No heavyweight test scaffolding in the sprint window.
 
 **Target Platform**: Local laptop demo (macOS/Linux) via `docker compose up` or bare-metal `uvicorn` + `vite`; must run with no deploy dependency (venue Wi-Fi is a known risk).
 
@@ -41,7 +41,6 @@ Technical approach: a FastAPI backend orchestrates one request-scoped pipeline �
 | **I. Live-Calls-Only Scoring Path** | Every audit runs the real pipeline; no cached probabilities or fixture-scored rules in the production path. | The `/api/v1/audit` handler always executes scrape → extract → one live batched Jev `/api/alpha/decisions` call → deterministic VaR → one live synthesis call. `DEMO_MODE=1` substitutes pre-scraped markdown ONLY at the fetch stage (transport fallback for venue Wi-Fi); scoring and synthesis still run live on fixture text. A failed stage returns an explicit error — never a fabricated result (FR-011). |
 | **II. Evidence-Grounded Findings** | Every violation carries a verbatim quote or absence-statement, exact `articles[]` citation, and the rule `id`; synthesis must not invent violations, articles, or fines. | The `violations[]` contract requires `evidence_quote` (verbatim from scraped text or an explicit "the policy omits X" absence statement), `articles`, and `id` per item. The synthesis prompt receives only the scored rule results and their `remediation`/`evidence` fields and is instructed to paraphrase them, never introduce new findings or penalty figures (see contracts/api-audit.md). |
 | **III. UAE-First Legal Coverage** | UAE PDPL and DIFC DPL lead; GDPR is EU-expansion context; `law.json` caveats respected; new rules need a `source_url`. | The rule set is loaded verbatim from `law.json` (10 rules, UAE/DIFC primary). Rule metadata (`jurisdiction`, `articles`, `penalty_framework.basis`, `source_url`) is passed through to the API response and UI unchanged. The `_meta.critical_caveats` are honored: no published PDPL fine schedule is claimed, Art. 13 is treated as Right-to-Obtain-Information, DIFC Schedule 2 caps are per-contravention USD. No new jurisdictions added. |
-| **IV. Single-Command Runnability** | `docker compose up` (or `uvicorn` + `vite`) with only `OPENROUTER_API_KEY` required; fail fast on missing key; offline-capable demo path. | `docker-compose.yml` already defines `api` + `web` with env vars (`OPENROUTER_API_KEY`, `OPENROUTER_JEV_MODEL`, `OPENROUTER_VAR_MODEL`) and defaults. The app validates the key at startup and exits with a clear message if absent. Two pre-scraped fixtures (high-risk startup, major UAE institutional bank) under `backend/fixtures/` power `DEMO_MODE=1`. quickstart.md documents both run modes. |
 | **V. Honest Exposure Estimates** | Provenance labels (`statutory` vs `estimate` vs `mixed`) preserved; turnover rules scale with `annual_revenue`; formula disclosed; AED at fixed 3.673. | `penalty_framework.basis` is passed through verbatim into each violation item; the UI renders it as a provenance badge and never presents estimates as statutory fines. `default_exposure_calc` is resolved deterministically (fixed amount or turnover formula against `annual_revenue`, default USD 5M); the response discloses `revenue_used` and the formula `exposure = default_exposure_calc × probability`. AED = USD × 3.673. |
 
 **Result**: PASS — no violations. Re-checked after Phase 1 design (data-model.md, contracts/api-audit.md, quickstart.md): no principle is weakened by the design; Complexity Tracking is empty.
@@ -77,7 +76,6 @@ backend/
 │       ├── scoring.py          # one batched Jev call: POST /api/alpha/decisions, noul questions map
 │       ├── var.py              # deterministic exposure math: calc × noul; USD→AED × 3.673; severity ordering
 │       └── briefing.py         # one GPT-6 Sol chat call: exec briefing + prioritized remediation, constrained to rule results
-└── fixtures/                   # DEMO_MODE=1 pre-scraped markdown (startup + UAE bank)
 
 frontend/
 ├── Dockerfile

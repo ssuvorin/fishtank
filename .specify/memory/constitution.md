@@ -22,7 +22,6 @@ Penalty figures MUST be labeled by provenance: `statutory` (DIFC Schedule 2 caps
 - **Sprint window.** ~3-hour build (2:00-5:00 PM, pitches at 5:00). Scope is fixed: URL input → scrape → Jev scoring → VaR + remediation → severity-grid dashboard + JSON/PDF export. No new jurisdictions, no auth, no persistence layer, no multi-page scraping beyond landing + privacy policy.
 - **Budget.** OpenRouter spend is capped at ~$5 total for the event. Batch Jev into ONE `/api/alpha/decisions` call per audit (all rules in a single `questions` map); GPT-6 Sol synthesis is one chat call per audit. No retries-with-different-prompts for tuning; no per-rule Jev calls.
 - **Security.** `OPENROUTER_API_KEY` lives only in `.env` / environment — NEVER committed. `.env` MUST be in `.gitignore`. Scraped content is fetched over HTTPS only; no credentials, cookies, or PII are stored. The audit endpoint MUST validate the input URL and refuse non-http(s) schemes.
-- **Demo safety.** Two pre-scraped fixtures (high-risk startup + major UAE institutional bank) MUST be prepared before 5:00 PM so `DEMO_MODE=1` works with zero network. Export (JSON/PDF) MUST work offline.
 - **Legal disclaimer.** Output is a screening signal for demo purposes, not legal advice; estimates are clearly labeled. No claim of statutory UAE fine amounts.
 
 ## Governance

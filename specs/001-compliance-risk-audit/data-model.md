@@ -22,8 +22,8 @@ Text extracted from one fetched page. An audit holds a `landing` document and op
 |-------|------|-------|
 | `source_url` | string | Final URL after redirects. |
 | `page_kind` | `"landing"` \| `"privacy"` | Role in the audit. |
-| `extraction_method` | `"static"` \| `"rendered"` \| `"fixture"` | `static` = Scrapling Fetcher; `rendered` = DynamicFetcher fallback (FR-003); `fixture` = DEMO_MODE pre-scraped markdown. |
-| `text` | string | Readable markdown text (markdownify output or fixture body). Empty → error path, never scored. |
+| `extraction_method` | `"static"` \| `"rendered"` | `static` = Scrapling Fetcher; `rendered` = DynamicFetcher fallback (FR-003); `fixture` = DEMO_MODE pre-scraped markdown. |
+| `text` | string | Readable markdown text (markdownify outputre body). Empty → error path, never scored. |
 | `coverage_notes` | list[string] | E.g. `"privacy page not found — landing text only"`, `"rendered fetch used"`, `"non-English text detected — reduced confidence"`. Surfaced as `pages_scraped` context + limited-coverage flag (FR-014). |
 
 ## Rule

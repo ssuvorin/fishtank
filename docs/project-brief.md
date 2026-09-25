@@ -24,9 +24,7 @@ jurisdictions (UAE PDPL & DIFC), quantifying legal exposure into exact currency 
 
 ## SYSTEM ARCHITECTURE & SPRINT WORKFLOW
 
-DEMO SAFETY: backend supports `DEMO_MODE=1` — serves pre-scraped markdown
-fixtures (fixtures/) instead of live Scrapling calls; Jev/GPT calls are also
-cached per-fixture. Live mode remains for on-stage wow if Wi-Fi holds.
+LIVE ONLY: every audit executes the real pipeline — Scrapling fetch, Jev scoring, GPT-6 Sol briefing. No fixture/caching paths.
 
 ```
 [User Input: Website URL + Optional Annual Revenue ($5M default)]
@@ -128,10 +126,10 @@ Export Button: Download Executive Action Plan (JSON / PDF).
 
 ### Backend
 
-- FastAPI `/api/v1/audit`: Scrapling fetch (privacy link discovery, markdownify) OR fixture when `DEMO_MODE=1`.
+- FastAPI `/api/v1/audit`: Scrapling fetch (privacy link discovery, markdownify) — live fetch every audit.
 - law.json loaded as rule set; one batched Jev call (`/api/alpha/decisions`, `~typesafe/jev-latest`, `noul` per rule) over scraped text.
 - Deterministic VaR: `exposure = default_exposure_calc * noul`; turnover rules scale with revenue input.
-- GPT-6 Sol (`~openai/gpt-sol-latest` via OR chat) generates exec briefing + remediation patch list; cached per fixture.
+- GPT-6 Sol (`~openai/gpt-sol-latest` via OR chat) generates exec briefing + remediation patch list — live call per audit.
 
 ### Frontend
 
@@ -140,6 +138,5 @@ Export Button: Download Executive Action Plan (JSON / PDF).
 
 ### Demo prep (before 5:00 PM)
 
-- Pre-scrape 2 fixtures (high-risk startup + major UAE institutional bank) so `DEMO_MODE=1` works with zero network.
 - Full pass on laptop; verify export works offline.
-- 3-min pitch: hook = "compliance as a CFO number", live demo if Wi-Fi holds else `DEMO_MODE=1`; close on UAE-first law coverage + real DIFC/CNIL enforcement stats.
+- 3-min pitch: hook = "compliance as a CFO number", live demo on-stage; close on UAE-first law coverage + real DIFC/CNIL enforcement stats.
