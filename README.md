@@ -108,3 +108,4 @@ Tests: `cd backend && pip install pytest && python -m pytest` (29 tests). Fronte
 
 - Sergey Suvorin: [@ssuvorin](https://github.com/ssuvorin)
 - Ivan Doronin: [@doroninivan](https://github.com/doroninivan)
+- Devin AI: [@devin-ai-integration](https://github.com/apps/devin-ai-integration), AI software engineer by Cognition
