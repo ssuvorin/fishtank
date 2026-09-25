@@ -16,6 +16,8 @@ from ..errors import (
     UnreachableError,
 )
 
+from ..models import ScrapedDocument
+
 _FETCH_TIMEOUT_S = 20.0
 _MIN_TEXT_CHARS = 200  # below this, try rendered fallback / no-content
 
