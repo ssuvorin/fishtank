@@ -49,11 +49,21 @@ export default function ExportButton({ result }: { result: AuditResponse }) {
   return (
     <button
       type="button"
-      className="export-btn"
+      className="btn btn--ghost export-btn"
       onClick={handleExport}
       title="Download the full audit as an Executive Action Plan JSON"
     >
-      ⤓ Export Action Plan
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden>
+        <path
+          d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M3 13h10"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Export Action Plan
     </button>
   )
 }

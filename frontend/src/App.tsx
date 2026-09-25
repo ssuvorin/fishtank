@@ -14,6 +14,44 @@ type Phase =
   | { kind: 'done'; result: AuditResponse }
   | { kind: 'error'; message: string; code: string; retryable: boolean }
 
+const FRAMEWORKS = ['UAE PDPL', 'DIFC DPL 2020', 'EU GDPR', 'ePrivacy Directive']
+
+function LogoMark() {
+  return (
+    <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden>
+      <defs>
+        <linearGradient id="lm-g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ffd27a" />
+          <stop offset="1" stopColor="#f08a24" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M16 3.5l10.5 4.6v7.6c0 6.4-4.4 11.3-10.5 13.1C9.9 27 5.5 22.1 5.5 15.7V8.1z"
+        fill="none"
+        stroke="url(#lm-g)"
+        strokeWidth="2.2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M11 16.8l3.4 3.4 6.8-7.4"
+        fill="none"
+        stroke="url(#lm-g)"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname
+  } catch {
+    return url
+  }
+}
+
 export default function App() {
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' })
   const [lastRequest, setLastRequest] = useState<{
@@ -47,64 +85,129 @@ export default function App() {
     }
   }
 
+  const status =
+    phase.kind === 'loading'
+      ? { tone: 'live', text: 'Audit running' }
+      : phase.kind === 'done'
+        ? { tone: 'ok', text: 'Audit complete' }
+        : phase.kind === 'error'
+          ? { tone: 'warn', text: 'Needs attention' }
+          : { tone: 'idle', text: 'Ready' }
+
   return (
-    <div className="app">
-      <header className="app__header">
-        <div className="app__brand">
-          <span className="app__logo">◈</span>
-          <div>
-            <h1 className="app__title">ComplyRisk AI</h1>
-            <p className="app__subtitle">
-              Compliance as a CFO number — UAE PDPL · DIFC · GDPR exposure audit
-            </p>
+    <div className="shell">
+      <div className="shell__glow" aria-hidden />
+      <header className="topbar">
+        <div className="topbar__inner">
+          <div className="brand">
+            <LogoMark />
+            <div className="brand__text">
+              <span className="brand__name">
+                ComplyRisk<span className="brand__ai">AI</span>
+              </span>
+              <span className="brand__tag">Compliance exposure as a CFO number</span>
+            </div>
+          </div>
+          <div className="topbar__right">
+            <span className={`status-pill status-pill--${status.tone}`}>
+              <span className="status-pill__dot" aria-hidden />
+              {status.text}
+            </span>
+            {phase.kind === 'done' && <ExportButton result={phase.result} />}
           </div>
         </div>
-        {phase.kind === 'done' && <ExportButton result={phase.result} />}
       </header>
 
-      <main className="app__main">
-        <AuditForm onSubmit={submit} busy={phase.kind === 'loading'} />
+      <main className="app">
+        <section className={`intro${phase.kind === 'idle' ? '' : ' intro--compact'}`}>
+          {phase.kind === 'idle' && (
+            <>
+              <p className="eyebrow">Live privacy-posture audit</p>
+              <h1 className="intro__title">
+                What is your privacy policy <em>actually</em> costing you?
+              </h1>
+              <p className="intro__lede">
+                One live pass scrapes your site, scores 10 UAE-first legal rules with
+                calibrated probabilities, and prices the exposure in USD and AED.
+              </p>
+            </>
+          )}
+          <AuditForm onSubmit={submit} busy={phase.kind === 'loading'} />
+          {phase.kind === 'idle' && (
+            <ul className="frameworks" aria-label="Frameworks covered">
+              {FRAMEWORKS.map((f) => (
+                <li key={f} className="frameworks__item">
+                  {f}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
-        {phase.kind === 'loading' && <ScanStages />}
+        {phase.kind === 'loading' && (
+          <div className="phase" key="loading">
+            <ScanStages />
+          </div>
+        )}
 
         {phase.kind === 'error' && (
-          <div className="error-panel" role="alert">
-            <div className="error-panel__title">
-              Audit failed
-              <span className="error-panel__code">{phase.code}</span>
+          <div className="phase" key="error">
+            <div className="error-panel" role="alert">
+              <div className="error-panel__icon" aria-hidden>
+                !
+              </div>
+              <div className="error-panel__body">
+                <div className="error-panel__title">
+                  The audit couldn't complete
+                  <span className="error-panel__code">{phase.code}</span>
+                </div>
+                <p className="error-panel__msg">{phase.message}</p>
+                {lastRequest && (
+                  <p className="error-panel__target">
+                    Target: <span className="mono">{hostOf(lastRequest.url)}</span>
+                  </p>
+                )}
+                {phase.retryable && lastRequest && (
+                  <button
+                    className="btn btn--primary error-panel__retry"
+                    onClick={() => submit(lastRequest.url, lastRequest.revenue)}
+                  >
+                    ↻ Retry audit
+                  </button>
+                )}
+              </div>
             </div>
-            <p className="error-panel__msg">{phase.message}</p>
-            {phase.retryable && lastRequest && (
-              <button
-                className="error-panel__retry"
-                onClick={() => submit(lastRequest.url, lastRequest.revenue)}
-              >
-                Retry audit
-              </button>
-            )}
           </div>
         )}
 
         {phase.kind === 'done' && (
-          <>
+          <div className="phase results" key={`done-${phase.result.url}`}>
+            <div className="results__target">
+              <span className="eyebrow">Audit report</span>
+              <span className="results__host mono">{hostOf(phase.result.url)}</span>
+              <span className="results__pages">
+                {phase.result.pages_scraped.length} page
+                {phase.result.pages_scraped.length === 1 ? '' : 's'} analysed
+              </span>
+            </div>
             <ExposureCallout result={phase.result} />
             <ViolationGrid violations={phase.result.violations} />
             <BriefingPanel briefing_md={phase.result.briefing_md} />
-          </>
-        )}
-
-        {phase.kind === 'idle' && (
-          <p className="app__empty">
-            Enter a URL to audit its privacy posture against 10 UAE-first legal
-            rules. One live pass — no cached results.
-          </p>
+          </div>
         )}
       </main>
 
-      <footer className="app__footer">
-        Screening signal for prioritization — not legal advice. Figures are
-        modeled exposure: statutory frameworks where published, analyst
-        estimates where not. AED at the fixed 3.673 peg.
+      <footer className="footer">
+        <div className="footer__inner">
+          <span className="footer__mark">
+            <LogoMark /> ComplyRisk AI
+          </span>
+          <p className="footer__disclaimer">
+            Screening signal for prioritization — not legal advice. Figures are
+            modeled exposure: statutory frameworks where published, analyst
+            estimates where not. AED at the fixed 3.673 peg.
+          </p>
+        </div>
       </footer>
     </div>
   )

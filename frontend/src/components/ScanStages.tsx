@@ -6,11 +6,31 @@ import { useEffect, useState } from 'react'
  * the viewer while the one network call is in flight; they do NOT claim to
  * report real backend progress.
  */
-const STAGES: { label: string; until: number }[] = [
-  { label: 'Scraping landing page & discovering privacy policy', until: 10 },
-  { label: 'Scoring 10 legal rules (Jev calibrated probabilities)', until: 55 },
-  { label: 'Computing penalty exposure', until: 65 },
-  { label: 'Drafting executive briefing', until: Infinity },
+const STAGES: { key: string; title: string; detail: string; until: number }[] = [
+  {
+    key: 'scrape',
+    title: 'Scraping',
+    detail: 'Landing page & privacy-policy discovery',
+    until: 10,
+  },
+  {
+    key: 'score',
+    title: 'Jev scoring',
+    detail: '10 legal rules · calibrated probabilities',
+    until: 55,
+  },
+  {
+    key: 'estimate',
+    title: 'Estimating',
+    detail: 'Penalty exposure in USD & AED',
+    until: 65,
+  },
+  {
+    key: 'draft',
+    title: 'Drafting',
+    detail: 'Executive briefing narrative',
+    until: Infinity,
+  },
 ]
 
 export default function ScanStages() {
@@ -18,34 +38,75 @@ export default function ScanStages() {
 
   useEffect(() => {
     const t0 = Date.now()
-    const tick = setInterval(
-      () => setElapsed((Date.now() - t0) / 1000),
-      200,
-    )
+    const tick = setInterval(() => setElapsed((Date.now() - t0) / 1000), 200)
     return () => clearInterval(tick)
   }, [])
 
   const activeIdx = STAGES.findIndex((s) => elapsed < s.until)
+  // Asymptotic cosmetic bar: tracks the heuristic stage windows, never hits 100%.
+  const progress = Math.min(96, (1 - Math.exp(-elapsed / 28)) * 100)
 
   return (
-    <div className="scan-stages" role="status" aria-live="polite">
-      <div className="scan-stages__header">
-        <span className="scan-stages__pulse" aria-hidden />
-        <span>Audit in progress — {elapsed.toFixed(0)}s elapsed</span>
+    <section className="scan" role="status" aria-live="polite">
+      <header className="scan__head">
+        <div className="scan__title">
+          <span className="scan__pulse" aria-hidden />
+          Audit in progress
+        </div>
+        <span className="scan__timer mono">
+          {String(Math.floor(elapsed / 60)).padStart(2, '0')}:
+          {String(Math.floor(elapsed % 60)).padStart(2, '0')}
+        </span>
+      </header>
+
+      <div className="scan__bar" aria-hidden>
+        <span className="scan__bar-fill" style={{ width: `${progress}%` }} />
       </div>
-      <ol className="scan-stages__list">
+
+      <ol className="scan__steps">
         {STAGES.map((s, i) => {
-          const state =
-            i < activeIdx ? 'done' : i === activeIdx ? 'active' : 'pending'
+          const state = i < activeIdx ? 'done' : i === activeIdx ? 'active' : 'pending'
           return (
-            <li key={s.label} className={`scan-stage scan-stage--${state}`}>
-              <span className="scan-stage__dot" aria-hidden />
-              <span className="scan-stage__label">{s.label}</span>
-              {state === 'done' && <span className="scan-stage__check">✓</span>}
+            <li key={s.key} className={`step step--${state}`}>
+              <span className="step__node" aria-hidden>
+                {state === 'done' ? (
+                  <svg viewBox="0 0 16 16" width="14" height="14">
+                    <path
+                      d="M3.5 8.5l3 3 6-7"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  <span className="step__num">{i + 1}</span>
+                )}
+              </span>
+              <span className="step__text">
+                <span className="step__title">{s.title}</span>
+                <span className="step__detail">{s.detail}</span>
+              </span>
+              <span className="step__state">
+                {state === 'done' ? 'Done' : state === 'active' ? 'Running' : 'Queued'}
+              </span>
             </li>
           )
         })}
       </ol>
-    </div>
+
+      <div className="scan__skeleton" aria-hidden>
+        <div className="skeleton skeleton--hero" />
+        <div className="scan__skeleton-grid">
+          <div className="skeleton skeleton--card" />
+          <div className="skeleton skeleton--card" />
+          <div className="skeleton skeleton--card" />
+        </div>
+      </div>
+      <p className="scan__note">
+        Stage timing is indicative — the audit runs as one live request.
+      </p>
+    </section>
   )
 }

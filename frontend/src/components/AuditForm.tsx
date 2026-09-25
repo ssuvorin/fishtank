@@ -36,38 +36,62 @@ export default function AuditForm({ onSubmit, busy }: Props) {
   }
 
   return (
-    <form className="audit-form" onSubmit={handleSubmit}>
+    <form
+      className={`audit-form${busy ? ' audit-form--busy' : ''}`}
+      onSubmit={handleSubmit}
+    >
       <div className="audit-form__row">
-        <input
-          className="audit-form__url"
-          type="text"
-          inputMode="url"
-          placeholder={PLACEHOLDER}
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          disabled={busy}
-          aria-label="Website URL to audit"
-        />
-        <input
-          className="audit-form__revenue"
-          type="text"
-          inputMode="numeric"
-          placeholder="Annual revenue USD (optional)"
-          title="Used for turnover-scaled penalty frameworks. Defaults to 5,000,000 USD."
-          value={revenue}
-          onChange={(e) => setRevenue(e.target.value)}
-          disabled={busy}
-          aria-label="Annual revenue in USD (optional)"
-        />
-        <button className="audit-form__submit" type="submit" disabled={busy}>
-          {busy ? <span className="spinner" aria-hidden /> : 'Audit'}
+        <label className="field field--url">
+          <span className="field__label">Website</span>
+          <input
+            className="field__input audit-form__url"
+            type="text"
+            inputMode="url"
+            placeholder={PLACEHOLDER}
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            disabled={busy}
+            aria-label="Website URL to audit"
+            autoComplete="url"
+            spellCheck={false}
+          />
+        </label>
+        <label className="field field--revenue">
+          <span className="field__label">Annual revenue · USD</span>
+          <input
+            className="field__input audit-form__revenue"
+            type="text"
+            inputMode="numeric"
+            placeholder="5,000,000 (default)"
+            title="Used for turnover-scaled penalty frameworks. Defaults to 5,000,000 USD."
+            value={revenue}
+            onChange={(e) => setRevenue(e.target.value)}
+            disabled={busy}
+            aria-label="Annual revenue in USD (optional)"
+          />
+        </label>
+        <button className="btn btn--primary audit-form__submit" type="submit" disabled={busy}>
+          {busy ? (
+            <>
+              <span className="spinner" aria-hidden /> Auditing
+            </>
+          ) : (
+            <>
+              Run audit <span aria-hidden>→</span>
+            </>
+          )}
         </button>
       </div>
-      <p className="audit-form__hint">
-        Revenue defaults to <strong>USD 5,000,000</strong> for turnover-scaled
-        penalty frameworks (GDPR 4%, ePrivacy) when left blank.
-      </p>
-      {localError && <p className="audit-form__error">{localError}</p>}
+      {localError ? (
+        <p className="audit-form__error" role="alert">
+          {localError}
+        </p>
+      ) : (
+        <p className="audit-form__hint">
+          Revenue defaults to <strong>USD 5,000,000</strong> for turnover-scaled
+          penalty frameworks (GDPR 4%, ePrivacy) when left blank.
+        </p>
+      )}
     </form>
   )
 }
