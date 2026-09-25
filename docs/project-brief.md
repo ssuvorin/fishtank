@@ -29,15 +29,15 @@ jurisdictions (UAE PDPL & DIFC), quantifying legal exposure into exact currency 
 │
 ▼
 
-FAST INGESTION (0 min dev time)
+FAST INGESTION
 
-Endpoint triggers Jina Reader API (https://r.jina.ai/{url}) or Firecrawl.
+Endpoint triggers Scrapling (Fetcher for static pages, DynamicFetcher fallback
+for JS-rendered sites).
 
-Extracts clean Markdown representation of landing page & /privacy policy.
+Fetches landing page, discovers /privacy policy link, extracts text
+(markdownify on the policy body).
 │
 ▼
-
-VECTOR RETRIEVAL (In-Memory ChromaDB)
 
 Splits extracted text into semantic paragraph chunks.
 
@@ -45,9 +45,13 @@ Matches policy chunks against pre-indexed legal articles (GDPR, UAE PDPL, DIFC).
 │
 ▼
 
-DETERMINISTIC PROBABILITY ENGINE (Jev / System One Calibrated Scoring)
+DETERMINISTIC PROBABILITY ENGINE (Jev via OpenRouter /api/alpha/decisions)
 
-Parallel evaluation of Noul boolean assertions (returns 0.0 - 1.0 confidence).
+One batched call per audit: model "~typesafe/jev-latest" (resolves to
+typesafe/jev-1.13-YYYYMMDD), state = scraped policy text, questions = map of
+assertion_id -> {type: "noul", instructions: <boolean question>}.
+Each answer returns a calibrated probability 0.0 - 1.0.
+NOTE: decisions endpoint only — Jev is not available via /chat/completions.
 
 Examples:
 
@@ -57,7 +61,7 @@ Examples:
 │
 ▼
 
-MONETARY VALUE-AT-RISK (VAR) SYNTHESIS (GPT Engine)
+MONETARY VALUE-AT-RISK (VAR) SYNTHESIS (GPT-6 Sol via OpenRouter)
 
 Calculates financial exposure: Penalty Framework Ceiling * Jev Probability Score.
 
@@ -121,12 +125,12 @@ Export Button: Download Executive Action Plan (JSON / PDF).
 ### Hour 0:00 - 1:00 | Ingestion & Vector Setup
 
 - Initialize FastAPI backend.
-- Ingest Jina Reader / Firecrawl output.
+- Ingest website content via Scrapling (Fetcher + DynamicFetcher fallback, markdownify to text).
 - Load in-memory legal knowledge base with the 8 core articles.
 
 ### Hour 1:00 - 2:30 | Probability Engine & Scoring
 
-- Connect Jev API for calibrated probability extraction (Noul queries).
+- Connect OpenRouter decisions endpoint (`/api/alpha/decisions`, model `~typesafe/jev-latest`) for calibrated probability extraction (batched `noul` questions).
 - Pipe calibrated probabilities into GPT prompt for monetary liability calculation.
 - Expose single `/api/v1/audit` endpoint.
 

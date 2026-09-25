@@ -1,0 +1,238 @@
+{
+  "_meta": {
+    "description": "Legal knowledge base for ComplyRisk AI audit engine. UAE-focused: UAE PDPL (Federal Decree-Law No. 45/2021) and DIFC DPL No. 5/2020 are primary; GDPR is secondary for EU-expansion exposure.",
+    "verified": "2026-09-25 via Exa research against primary sources",
+    "sources": {
+      "uae_pdpl_text": "https://uaelegislation.gov.ae/en/legislations/1972 (official English translation, last update 2021-09-20)",
+      "uae_pdpl_pdf": "https://dpo-india.com/Resources/Privacy_Regulations_in_Middle_East/united_arab_emirates.pdf",
+      "difc_regulations": "https://assets.difc.com/.../data-protection-regulation.pdf",
+      "difc_fines_guidance": "https://assets.difc.com/.../fines_and_other_sanctions.pdf",
+      "difc_enforcement_stats": "https://www.difc.com/business/registrars-and-commissioners/commissioner-of-data-protection/supervision-enforcement",
+      "gdpr_consolidated": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0679-20160504",
+      "cnil_cookie_enforcement": "CNIL SAN-2021-023/024 (2021-12-31): Google EUR 150M, Facebook EUR 60M + EUR 100k/day injunction; Conseil d'Etat upheld Google EUR 100M (2020 case) on 2022-01-31"
+    },
+    "critical_caveats": [
+      "UAE PDPL has NO published fine schedule: Art. 26 delegates all penalty amounts to a Cabinet decision that has NOT been issued. Executive Regulations were still unpublished as of 2025-01-06 (DLA Piper). ALL 'default_exposure_calc' AED figures in this file are ANALYST ESTIMATES for demo purposes, not statutory penalties. penalty_framework.basis='estimate' marks them.",
+      "UAE PDPL Art. 13 is 'Right to Obtain Information', NOT child data protection. The decree has no dedicated children article; guardian-consent duties derive from consent rules (Art. 5-6). Child age threshold is not set in the decree; UAE law-firm guidance reads 'child' as under 18.",
+      "UAE PDPL in-force practical enforcement remains limited; UAE Data Office is the supervisory authority ('Bureau').",
+      "DIFC DPL Schedule 2 caps administrative fines at USD 10k-100k per contravention (Art. 62(2)); uncapped 'general fines' under Art. 62(3). DPO-related breaches ~USD 25k, transfer breaches ~USD 50k per Schedule 2.",
+      "GDPR Art. 8 default child consent age is 16; Member States may lower to 13 (not below)."
+    ],
+    "exposure_model": "exposure = default_exposure_calc * jev_noul_probability; turnover-based rules scale with user-provided annual_revenue (default USD 5M)"
+  },
+  "rules": [
+    {
+      "id": "uae_pdpl_lawful_consent",
+      "category": "Data Subject Consent",
+      "jurisdiction": "UAE Mainland",
+      "law": "UAE Federal Decree-Law No. 45/2021 on Personal Data Protection (PDPL)",
+      "articles": ["Article 5", "Article 6"],
+      "check_description": "Confirm processing adheres to PDPL lawful bases (Art. 5) and consent conditions (Art. 6): consent must be provable, clear/simple/unambiguous, and withdrawal must be easy with the right stated in the consent request itself.",
+      "noul_assertion": "The privacy policy fails to state valid consent conditions under UAE PDPL — no provable affirmative consent, or omits the right to withdraw consent easily at any time.",
+      "penalty_framework": {
+        "type": "administrative_fine",
+        "currency": "AED",
+        "min_fine": 100000,
+        "max_fine": 1000000,
+        "default_exposure_calc": "750000",
+        "basis": "estimate",
+        "note": "PDPL Art. 26 delegates fines to unpublished Cabinet decision; figure is analyst estimate."
+      },
+      "severity": "HIGH",
+      "evidence": "UAE PDPL Art. 6(1): controller must prove consent; consent request must state right to withdraw; withdrawal allowed 'at any time'.",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1972",
+      "remediation": "Add a UAE PDPL consent clause: affirmative opt-in, stated right to withdraw at any time, and a working withdrawal channel (privacy portal or dedicated email)."
+    },
+    {
+      "id": "uae_dpo_appointment",
+      "category": "Local Representation & DPO",
+      "jurisdiction": "UAE Mainland & DIFC",
+      "law": "UAE PDPL / DIFC Data Protection Law No. 5 of 2020",
+      "articles": ["UAE PDPL Art. 10", "UAE PDPL Art. 11", "DIFC DPL Art. 16-20"],
+      "check_description": "Check whether a DPO appointment and its accessible contact details are published. PDPL Art. 10-11 require a DPO where processing involves sensitive data or large-scale/systematic monitoring; DIFC DPL requires DPO appointment and annual assessment for high-risk processing.",
+      "noul_assertion": "The document lacks contact details for an appointed Data Protection Officer (DPO) or local representative accessible within the UAE/DIFC jurisdiction.",
+      "penalty_framework": {
+        "type": "administrative_fine",
+        "currency": "USD",
+        "difc_schedule2_max": 25000,
+        "uae_min_fine": 50000,
+        "uae_max_fine": 500000,
+        "uae_currency": "AED",
+        "default_exposure_calc": "350000",
+        "basis": "mixed: DIFC $25k statutory (Schedule 2); UAE amount is estimate"
+      },
+      "severity": "HIGH",
+      "evidence": "DIFC enforcement stats 2025: 717 preliminary notices + 273 decision notices issued — active enforcement regime, unlike UAE mainland.",
+      "source_url": "https://www.difc.com/business/registrars-and-commissioners/commissioner-of-data-protection/supervision-enforcement",
+      "remediation": "Publish DPO contact (e.g., dpo@company.ae) and the UAE representative for regulatory correspondence; DIFC entities: file Annual Assessment."
+    },
+    {
+      "id": "cross_border_data_transfers",
+      "category": "Cross-Border Data Governance",
+      "jurisdiction": "UAE / DIFC / EU",
+      "law": "UAE PDPL Art. 22-23 / DIFC DPL Art. 26-28 / GDPR Art. 44-49",
+      "articles": ["UAE PDPL Art. 22", "UAE PDPL Art. 23", "DIFC DPL Art. 26", "DIFC DPL Art. 27", "GDPR Art. 46"],
+      "check_description": "Audit cross-border transfer disclosures: PDPL Art. 22 permits transfers only to adequate jurisdictions or under safeguards (Art. 23: contracts/SCCs, BCRs, consent, legal claims). DIFC Art. 26-27 impose adequacy/SCC requirements; Art. 28 adds government-data-sharing safeguards.",
+      "noul_assertion": "The privacy policy describes international data transfers without naming adequate jurisdictions, Standard Contractual Clauses, or other UAE PDPL Art. 23 / DIFC Art. 27 safeguards.",
+      "penalty_framework": {
+        "type": "administrative_fine",
+        "currency": "USD",
+        "difc_schedule2_max": 50000,
+        "uae_min_fine": 250000,
+        "uae_max_fine": 5000000,
+        "uae_currency": "AED",
+        "default_exposure_calc": "1500000",
+        "basis": "mixed: DIFC ~$50k statutory; UAE range is estimate"
+      },
+      "severity": "CRITICAL",
+      "evidence": "PDPL Art. 13(1)(g) separately requires telling data subjects which safeguards protect cross-border processing — missing transfer clause also breaches information duty.",
+      "source_url": "https://www.difc.com/business/registrars-and-commissioners/commissioner-of-data-protection/guidance",
+      "remediation": "Name hosting jurisdictions, identify sub-processors, and cite the specific Art. 23 safeguard (DIFC-issued SCCs exist — 'DIFC Abbreviated SCCs 2023')."
+    },
+    {
+      "id": "uae_breach_notification",
+      "category": "Incident Response & Transparency",
+      "jurisdiction": "UAE Mainland / EU",
+      "law": "UAE PDPL Art. 9 / GDPR Art. 33-34",
+      "articles": ["UAE PDPL Art. 9", "GDPR Art. 33", "GDPR Art. 34"],
+      "check_description": "Confirm documented commitments to notify the UAE Data Office ('Bureau') of breaches and inform affected data subjects where the breach threatens privacy/confidentiality — PDPL Art. 9 sets no fixed hour deadline (period set by Executive Regulations); GDPR requires 72h.",
+      "noul_assertion": "The policy contains no data breach incident-response clause — no commitment to notify the UAE Data Office or affected users within defined timeframes after unauthorized access.",
+      "penalty_framework": {
+        "type": "administrative_fine",
+        "currency": "EUR",
+        "gdpr_max_fixed_fine": 10000000,
+        "gdpr_max_turnover_pct": 0.02,
+        "uae_note": "UAE fines unpublished (Art. 26); GDPR ceiling applies for EU-facing exposure",
+        "default_exposure_calc": "annual_revenue * 0.02"
+      },
+      "severity": "HIGH",
+      "evidence": "PDPL Art. 9(1)-(4): controller must notify Bureau per Executive-Regulation period; Bureau verifies cause and imposes Art. 26 penalties on proven violation.",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1972",
+      "remediation": "Document breach protocol: immediate Bureau notification on becoming aware, user notification for high-risk breaches, named incident owner."
+    },
+    {
+      "id": "uae_data_subject_rights",
+      "category": "Data Subject Rights",
+      "jurisdiction": "UAE Mainland",
+      "law": "UAE PDPL Art. 13-18",
+      "articles": ["UAE PDPL Art. 13", "UAE PDPL Art. 15", "UAE PDPL Art. 16", "UAE PDPL Art. 17", "UAE PDPL Art. 18", "GDPR Art. 17"],
+      "check_description": "Verify the policy gives UAE data subjects actionable procedures for: obtaining information (Art. 13), erasure (Art. 15), rectification (Art. 16), restriction (Art. 17), objection incl. automated processing/profiling objection (Art. 18). A mere list of rights without a working request channel fails.",
+      "noul_assertion": "The policy omits an actionable procedure (form, email, or portal plus processing timeframe) for data subjects to exercise UAE PDPL rights — erasure, rectification, restriction, objection.",
+      "penalty_framework": {
+        "type": "administrative_fine",
+        "currency": "AED",
+        "min_fine": 50000,
+        "max_fine": 500000,
+        "default_exposure_calc": "300000",
+        "basis": "estimate"
+      },
+      "severity": "MEDIUM",
+      "evidence": "PDPL Art. 18 grants objection right specifically against automated processing/profiling — overlaps the AI-transparency check.",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1972",
+      "remediation": "Add a 'Your Rights under UAE PDPL' section: named request channel, committed response timeframe, identity-verification steps."
+    },
+    {
+      "id": "uae_sensitive_data_consent",
+      "category": "Sensitive & Children's Data",
+      "jurisdiction": "UAE Mainland",
+      "law": "UAE Federal Decree-Law No. 45/2021",
+      "articles": ["UAE PDPL Art. 4", "UAE PDPL Art. 5", "UAE PDPL Art. 6"],
+      "check_description": "Check handling of sensitive personal data (health, biometric, genetic, racial/ethnic, religious, political) and children's data: PDPL prohibits sensitive-data processing absent explicit consent or listed exemptions; children require verifiable guardian consent (under-18 per UAE practice; no statutory age in the decree).",
+      "noul_assertion": "The service processes or may process sensitive categories or minors' data but the policy omits explicit-consent/guardian-consent workflows and states no minimum age.",
+      "penalty_framework": {
+        "type": "administrative_fine",
+        "currency": "AED",
+        "min_fine": 100000,
+        "max_fine": 1000000,
+        "default_exposure_calc": "500000",
+        "basis": "estimate"
+      },
+      "severity": "HIGH",
+      "evidence": "No dedicated UAE PDPL child article — correct prior citation of 'Art. 13' (that article is Right to Obtain Information). Guardian consent derives from Art. 5-6 consent conditions.",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1972",
+      "remediation": "State minimum age (18 per UAE practice) with a no-knowing-collection disclaimer; for sensitive data, cite the explicit-consent basis per Art. 5 exemptions."
+    },
+    {
+      "id": "automated_profiling_transparency",
+      "category": "AI & Automated Decisions",
+      "jurisdiction": "UAE Mainland / EU",
+      "law": "UAE PDPL Art. 13(1)(c) & Art. 18 / GDPR Art. 22",
+      "articles": ["UAE PDPL Art. 13(1)(c)", "UAE PDPL Art. 18", "GDPR Art. 22"],
+      "check_description": "Confirm disclosure of automated processing/profiling decisions (PDPL Art. 13(1)(c) requires telling subjects about decisions made on automated processing including profiling) and an objection mechanism (Art. 18).",
+      "noul_assertion": "The policy fails to disclose whether personal data feeds automated decision-making or profiling, and provides no human-review or objection channel for such decisions.",
+      "penalty_framework": {
+        "type": "administrative_fine",
+        "currency": "AED",
+        "min_fine": 50000,
+        "max_fine": 500000,
+        "default_exposure_calc": "300000",
+        "basis": "estimate"
+      },
+      "severity": "MEDIUM",
+      "evidence": "PDPL Art. 13(1)(c): right to be informed of 'decisions made based on automated processing, including profiling' — unique UAE hook vs GDPR's narrower Art. 22.",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1972",
+      "remediation": "Disclose profiling/automated-decision usage and add an opt-out/human-review request channel."
+    },
+    {
+      "id": "cookie_reject_dark_patterns",
+      "category": "Cookies & Consent Mechanics",
+      "jurisdiction": "EU / Global (secondary for UAE-facing sites)",
+      "law": "ePrivacy Directive 2002/58/EC Art. 5(3) & EDPB Guidelines 05/2020",
+      "articles": ["ePrivacy Art. 5(3)", "GDPR Art. 7(3)", "EDPB Guidelines 05/2020"],
+      "check_description": "Verify a 1-click 'Reject All' mechanism equally prominent to 'Accept All' on the first cookie layer; no pre-ticked boxes; withdrawal as easy as consent (GDPR Art. 7(3)).",
+      "noul_assertion": "The site or policy fails to provide an equally prominent 1-click 'Reject All' for non-essential cookies, or uses dark patterns such as pre-ticked consent boxes.",
+      "penalty_framework": {
+        "type": "turnover_or_fixed",
+        "currency": "EUR",
+        "max_fixed_fine": 20000000,
+        "max_turnover_pct": 0.04,
+        "default_exposure_calc": "max(annual_revenue * 0.04, 500000)",
+        "note": "CNIL enforced under national ePrivacy transposition (French DPA Art. 82), not GDPR Art. 83 directly — same consent standard, regulator-controlled procedure."
+      },
+      "severity": "CRITICAL",
+      "evidence": "CNIL 2021-12-31: Google EUR 150M, Facebook EUR 60M for asymmetric reject path (3-5 clicks vs 1) + EUR 100k/day injunction; earlier CNIL 2020: Google EUR 100M, Amazon EUR 35M — upheld by Conseil d'Etat 2022-01-31.",
+      "source_url": "https://privacymatters.dlapiper.com/2022/01/france-cookies-new-record-sanctions-for-tech-giants-cnil-fines-facebook-ireland-60-million-euros-and-google-150-million-euros/",
+      "remediation": "Add 'Reject All' identical in prominence to 'Accept All' on layer 1; default-uncheck non-essential trackers."
+    },
+    {
+      "id": "gdpr_explicit_consent",
+      "category": "Data Subject Consent",
+      "jurisdiction": "EU (expansion risk)",
+      "law": "General Data Protection Regulation (GDPR)",
+      "articles": ["Article 6(1)(a)", "Article 7"],
+      "check_description": "For EU-facing operations: consent must be freely given, specific, informed, unambiguous opt-in; provable (Art. 7(1)); withdrawal as easy as granting (Art. 7(3)).",
+      "noul_assertion": "The privacy documentation permits processing on implied consent, opt-out models, or continued browsing without verifiable affirmative action.",
+      "penalty_framework": {
+        "type": "turnover_or_fixed",
+        "currency": "EUR",
+        "max_fixed_fine": 20000000,
+        "max_turnover_pct": 0.04,
+        "default_exposure_calc": "annual_revenue * 0.04"
+      },
+      "severity": "CRITICAL",
+      "evidence": "CNIL redacted decision (2023): EUR 40M fine citing Arts. 7, 12, 13, 15, 17, 26 breaches — consent defects compound with other articles in one action.",
+      "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0679-20160504",
+      "remediation": "Affirmative opt-in per purpose; record consent proof; withdrawal UI matching opt-in effort."
+    },
+    {
+      "id": "gdpr_child_data",
+      "category": "Protection of Minors",
+      "jurisdiction": "EU (expansion risk)",
+      "law": "GDPR Art. 8",
+      "articles": ["GDPR Art. 8"],
+      "check_description": "For EU-facing services offering information society services to children: consent valid at 16+; below that requires parental-responsibility holder's consent; member states may lower the age to 13 minimum; controller must make reasonable verification efforts.",
+      "noul_assertion": "The service offers EU-facing features but states no age threshold or parental-consent verification for under-16 users.",
+      "penalty_framework": {
+        "type": "turnover_or_fixed",
+        "currency": "EUR",
+        "max_fixed_fine": 20000000,
+        "max_turnover_pct": 0.04,
+        "default_exposure_calc": "annual_revenue * 0.04"
+      },
+      "severity": "HIGH",
+      "evidence": "GDPR Art. 8(1): 'at least 16 years old'; MS may lower to >=13. UK lowered to 13; DE/HU/NL kept 16; AT/IT 14.",
+      "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0679-20160504",
+      "remediation": "State 16+ (or per-market threshold 13-16) for EU users plus verifiable parental-consent flow."
+    }
+  ]
+}
