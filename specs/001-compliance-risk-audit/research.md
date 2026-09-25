@@ -7,11 +7,11 @@ Phase 0 output for `001-compliance-risk-audit`. Each entry: the decision, the al
 **Decision**: Scrapling — `Fetcher` for static pages, `DynamicFetcher` as JS-rendered fallback, `markdownify` for HTML→text. Privacy-policy link discovered from the fetched landing page (anchor scan over hrefs matching `privacy|privacy-policy|data-protection|legal|terms` and footer candidates), then fetched with the same pipeline.
 
 **Alternatives considered**:
-- *Jina AI Reader (`r.jina.ai`)*: hosted fetch→markdown. Rejected: adds a second external dependency and API key, another network failure point on venue Wi-Fi, no control over which page gets read, and it cannot run against `DEMO_MODE` fixtures. Cost/latency per audit also grows.
+- *Jina AI Reader (`r.jina.ai`)*: hosted fetch→markdown. Rejected: adds a second external dependency and API key, another network failure point on venue Wi-Fi, no control over which page gets read,. Cost/latency per audit also grows.
 - *Playwright/Selenium only*: heavier than needed; Scrapling's `DynamicFetcher` already covers the JS-rendered fallback case without a second tool in the critical path.
 - *httpx + BeautifulSoup manual*: workable but re-implements fetch niceties (TLS fingerprinting, retry, render fallback) Scrapling provides for free.
 
-**Why**: one local library, no key, full control of link discovery, works identically on fixture markdown (extraction stage is pure text processing). Satisfies FR-002/FR-003/FR-014.
+**Why**: one local library, no key, full control of link discovery, extraction stage is pure text processing on fetched HTML. Satisfies FR-002/FR-003/FR-014.
 
 ## R2. Probability scoring: Jev `/api/alpha/decisions` vs chat structured output
 
