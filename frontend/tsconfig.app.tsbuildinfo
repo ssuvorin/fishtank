@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/api.ts","./src/format.ts","./src/main.tsx","./src/vite-env.d.ts","./src/components/auditform.tsx","./src/components/briefingpanel.tsx","./src/components/exportbutton.tsx","./src/components/exposurecallout.tsx","./src/components/scanstages.tsx","./src/components/violationgrid.tsx"],"version":"5.9.3"}

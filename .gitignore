@@ -16,3 +16,8 @@ dist/
 
 # OS
 .DS_Store
+backend/static/
+*.tsbuildinfo
+backend/.venv/
+frontend/dist/
+frontend/node_modules/
