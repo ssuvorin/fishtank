@@ -61,92 +61,79 @@ _ABSENCE: dict[str, str] = {
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?\n])\s+")
 
 
-def _keyword_hits(rule: Rule) -> list[str]:
-    keys = list(_KEYWORDS.get(rule.id, []))
-    # also seed with domain terms from the check description / evidence note
-    for src in (rule.check_description, rule.evidence):
-        for word in re.findall(r"[A-Za-z]{5,}", src.lower()):
-            if word not in keys:
-                keys.append(word)
-    return keys
+def _keyword_re(rule: Rule) -> re.Pattern[str] | None:
+    """Whole-word match on the rule's evidentiary keywords.
+
+    Substring search made "age" hit "p*age*"/"us*age*" and the words mined
+    from check_description ("policy", "states", …) quoted any sentence at
+    all — a Moby-Dick page produced "evidence" for every rule.
+    """
+    keys = _KEYWORDS.get(rule.id, [])
+    if not keys:
+        return None
+    # Long keys are stems ("delet", "profil"); short ones ("age", "dpo", "16")
+    # must be whole words or "age" matches "agent".
+    alts = "|".join(
+        re.escape(k) + (r"(?!\w)" if len(k) <= 4 else "")
+        for k in sorted(keys, key=len, reverse=True)
+    )
+    return re.compile(rf"(?<![\w-])(?:{alts})", re.I)
 
 
 _CODE_WINDOW_RE = re.compile(
     r"[{}]|=>|\bfunction\s*\w*\s*\(|\b(?:var|let|const)\s+[\w$]+\s*=|"
-    r"\b(?:document|window)\.|<\/?script|!important|indexOf\(|getCookie|push\("
+    r"\b(?:document|window|self)\.|<\/?script|!important|indexOf\(|getCookie|push\(|"
+    r'\\"|":\s*["\[{]|\\u00[0-9a-f]{2}|static/chunks|===\s'
 )
 
 
 def _is_code_window(window: str) -> bool:
-    """True when the sentence window is minified JS/CSS rather than prose."""
+    """True when the sentence window is minified JS/CSS/JSON rather than prose."""
     if _CODE_WINDOW_RE.search(window):
         return True
-    punct = sum(window.count(c) for c in ";={}()")
+    punct = sum(window.count(c) for c in ";={}()\\")
     return punct >= 6
+
+
+def _window(source: str, pos: int) -> str:
+    start = max(source.rfind(".", 0, pos), source.rfind("\n", 0, pos)) + 1
+    end_cands = [j for j in (source.find(".", pos), source.find("\n", pos)) if j != -1]
+    end = min(end_cands) + 1 if end_cands else min(len(source), pos + _MAX_QUOTE)
+    quote = source[start:end].strip().lstrip("#*-> ").strip()
+    if len(quote) > _MAX_QUOTE:
+        quote = quote[:_MAX_QUOTE].rsplit(" ", 1)[0] + "…"
+    return quote
 
 
 def extract_evidence(
     rule: Rule,
     text: str,
     policy_texts: list[str] | None = None,
+    used: set[str] | None = None,
 ) -> str:
     """Return a verbatim ≤300-char quote containing a rule-relevant keyword.
 
-    Search order: policy pages first (privacy/cookies/legal), then the full
-    combined text. Code-like windows (minified JS/CSS) are skipped. Silence →
-    explicit absence statement (never fabricated).
+    Search order: policy pages first (privacy/cookies/legal), then `text`
+    (the landing page). Code-like windows are skipped, and so are quotes
+    already given to another rule (`used` is shared across one audit, and
+    updated here). Silence → explicit absence statement (never fabricated).
     """
+    absence = _ABSENCE.get(rule.id, f"The scraped text is silent on {rule.category}.")
     corpus: list[str] = [t for t in (policy_texts or []) if t and t.strip()]
     if text and text.strip():
         corpus.append(text)
-    if not corpus:
-        return _ABSENCE.get(rule.id, f"The scraped text is silent on {rule.category}.")
-
-    keys = _KEYWORDS.get(rule.id, [])
-    mined = _keyword_hits(rule)
+    rx = _keyword_re(rule)
+    if not corpus or rx is None:
+        return absence
+    used = used if used is not None else set()
 
     for source in corpus:
-        lowered = source.lower()
-        # collect all keyword hit positions, primary keys first then mined
-        positions: list[int] = []
-        for k in keys + mined:
-            start = 0
-            while True:
-                i = lowered.find(k.lower(), start)
-                if i == -1:
-                    break
-                positions.append(i)
-                start = i + 1
-                if len(positions) >= 40:
-                    break
-            if len(positions) >= 40:
+        for n, m in enumerate(rx.finditer(source)):
+            if n >= 60:
                 break
-        if not positions:
-            continue
-        # prefer the earliest non-code window; fall back to earliest overall
-        positions = sorted(set(positions))[:40]
-        chosen: int | None = None
-        for pos in positions:
-            s = max(source.rfind(".", 0, pos), source.rfind("\n", 0, pos)) + 1
-            end_cands = [
-                j for j in (source.find(".", pos), source.find("\n", pos)) if j != -1
-            ]
-            e = min(end_cands) + 1 if end_cands else min(len(source), pos + _MAX_QUOTE)
-            win = source[s:e].strip()
-            if not _is_code_window(win):
-                chosen = pos
-                break
-        if chosen is None:
-            # all hits are code — still try next corpus source first
-            continue
-        start = max(source.rfind(".", 0, chosen), source.rfind("\n", 0, chosen)) + 1
-        end_cands = [
-            j for j in (source.find(".", chosen), source.find("\n", chosen)) if j != -1
-        ]
-        end = min(end_cands) + 1 if end_cands else min(len(source), chosen + _MAX_QUOTE)
-        quote = source[start:end].strip()
-        if len(quote) > _MAX_QUOTE:
-            quote = quote[:_MAX_QUOTE].rsplit(" ", 1)[0] + "…"
-        return quote
-
-    return _ABSENCE.get(rule.id, f"The scraped text is silent on {rule.category}.")
+            quote = _window(source, m.start())
+            if len(quote) < 25 or quote in used or _is_code_window(quote):
+                continue
+            used.add(quote)
+            return quote
+    return absence

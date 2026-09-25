@@ -15,5 +15,6 @@ services:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       OPENROUTER_JEV_MODEL: ${OPENROUTER_JEV_MODEL:-~typesafe/jev-latest}
       OPENROUTER_VAR_MODEL: ${OPENROUTER_VAR_MODEL:-~openai/gpt-sol-latest}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY:-}
       CORS_ORIGINS: ""
     restart: unless-stopped

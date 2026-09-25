@@ -35,6 +35,11 @@ export interface ViolationResult {
   statutory_label?: string
 
   remediation: string
+  /**
+   * False when the rule's regime has no nexus to the site (e.g. ADGM rules on
+   * a non-ADGM site): never flagged, zero exposure. Absent on older backends.
+   */
+  applicable?: boolean
 }
 
 export interface Exposure {
@@ -53,7 +58,7 @@ export interface AuditResponse {
   /** True when privacy page was unobtainable / text extraction partial. */
   limited_coverage: boolean
   exposure: Exposure
-  /** All 10 rule results, ordered severity then probability desc. */
+  /** All 14 rule results, ordered severity then probability desc. */
   violations: ViolationResult[]
   briefing_md: string
   warnings?: string[]
@@ -115,4 +120,66 @@ export async function runAudit(req: AuditRequest): Promise<AuditResponse> {
   }
 
   return body as AuditResponse
+}
+
+// --- Voiced briefing (ElevenLabs, proxied by the backend; key never in the SPA)
+
+export interface NarrationWord {
+  text: string
+  start: number
+  end: number
+}
+
+export interface NarrationResponse {
+  script: string
+  audio_base64: string
+  mime: string
+  words: NarrationWord[]
+  /** Seconds at which the voice starts talking about each priority rule. */
+  cues: { rule_id: string; start: number }[]
+  voice: string
+}
+
+export async function voiceEnabled(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/briefing/voice`)
+    if (!res.ok) return false
+    const body = (await res.json()) as { enabled?: boolean }
+    return body.enabled === true
+  } catch {
+    return false
+  }
+}
+
+export async function requestNarration(result: AuditResponse): Promise<NarrationResponse> {
+  const scored = result.violations.filter((v) => v.applicable !== false)
+  const flagged = scored.filter((v) => v.flagged)
+  const top = [...flagged]
+    .sort((a, b) => b.exposure_usd - a.exposure_usd)
+    .slice(0, 3)
+    .map((v) => ({ rule_id: v.id, exposure_usd: v.exposure_usd }))
+  let host = result.url
+  try {
+    host = new URL(result.url).hostname
+  } catch {
+    /* keep raw */
+  }
+  const res = await fetch(`${API_BASE}/api/v1/briefing/speech`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      host,
+      exposure_usd: result.exposure.usd,
+      exposure_aed: result.exposure.aed,
+      flagged: flagged.length,
+      total: scored.length,
+      top,
+    }),
+  })
+  const body: unknown = await res.json().catch(() => null)
+  if (!res.ok) {
+    const detail = (body as { detail?: unknown } | null)?.detail
+    throw new Error(typeof detail === 'string' ? detail : `Voice briefing failed (HTTP ${res.status}).`)
+  }
+  return body as NarrationResponse
 }

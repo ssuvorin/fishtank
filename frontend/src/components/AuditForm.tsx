@@ -15,9 +15,14 @@ export default function AuditForm({ onSubmit, busy }: Props) {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    const trimmed = url.trim()
+    let trimmed = url.trim()
+    // "careem.com" / "www.sarwa.co" → https://… (other schemes still rejected)
+    if (!/^[a-z][a-z\d+.-]*:/i.test(trimmed) && /^[\w-]+(\.[\w-]+)+([/?#].*)?$/.test(trimmed)) {
+      trimmed = `https://${trimmed}`
+      setUrl(trimmed)
+    }
     if (!/^https?:\/\/.+\..+/i.test(trimmed)) {
-      setLocalError('Enter a valid http(s) URL — e.g. https://example.ae')
+      setLocalError('Enter a website address — e.g. example.ae or https://example.ae')
       return
     }
     setLocalError(null)

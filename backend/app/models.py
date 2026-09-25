@@ -1,6 +1,7 @@
 """Pydantic schemas mirroring spec entities (T005) and contracts/api-audit.md."""
 from __future__ import annotations
 
+import math
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Literal
@@ -23,6 +24,21 @@ class AuditRequest(BaseModel):
         if not v:
             raise ValueError("url is required")
         return v
+
+    @field_validator("annual_revenue", mode="before")
+    @classmethod
+    def _revenue(cls, v: Any) -> float | None:
+        """Contract: omitted, null, non-numeric or ≤ 0 → default (revenue_assumed).
+        Non-numeric used to 422 via float parsing, contradicting api-audit.md."""
+        if v is None or isinstance(v, bool):
+            return None
+        try:
+            n = float(str(v).replace(",", "").strip()) if isinstance(v, str) else float(v)
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(n) or n <= 0:
+            return None
+        return n
 
 
 class ScrapedDocument(BaseModel):
@@ -78,6 +94,9 @@ class ViolationResult(BaseModel):
     evidence_quote: str
     remediation: str
     statutory_label: str = ""
+    # False when the rule's regime does not reach this site (e.g. ADGM rules on
+    # a site with no ADGM nexus) — never flagged, zero exposure.
+    applicable: bool = True
 
 
 class ExposureSummary(BaseModel):
@@ -94,6 +113,42 @@ class AuditResponse(BaseModel):
     exposure: ExposureSummary
     violations: list[ViolationResult]
     briefing_md: str
+
+
+class NarrationItem(BaseModel):
+    rule_id: str = Field(max_length=64)
+    exposure_usd: float = Field(ge=0, le=1e12)
+
+
+class NarrationRequest(BaseModel):
+    """Structured figures for the voiced briefing — no free text (see narration.py)."""
+
+    host: str = Field(max_length=80)
+    exposure_usd: float = Field(ge=0, le=1e12)
+    exposure_aed: float = Field(ge=0, le=1e13)
+    flagged: int = Field(ge=0, le=50)
+    total: int = Field(ge=1, le=50)
+    top: list[NarrationItem] = Field(default_factory=list, max_length=3)
+
+
+class NarrationWord(BaseModel):
+    text: str
+    start: float
+    end: float
+
+
+class NarrationCue(BaseModel):
+    rule_id: str
+    start: float
+
+
+class NarrationResponse(BaseModel):
+    script: str
+    audio_base64: str
+    mime: str
+    words: list[NarrationWord]
+    cues: list[NarrationCue]
+    voice: str
 
 
 class RemediationItem(BaseModel):

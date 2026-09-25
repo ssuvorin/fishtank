@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 
 from ..errors import AuditError, AuditTimeoutError
 from ..models import (
@@ -20,6 +21,20 @@ from .scraper import scrape_site, validate_url
 from ..models import DEFAULT_REVENUE
 
 _BUDGET_S = 90.0
+
+# ADGM DPR 2021 binds entities established in ADGM. Without any ADGM mention on
+# the site the regime has no nexus, so its rules must not price exposure.
+_ADGM_NEXUS_RE = re.compile(r"\bADGM\b|Abu Dhabi Global Market", re.I)
+_NOT_APPLICABLE = (
+    "Not applicable — the site shows no ADGM nexus (no mention of ADGM or "
+    "Abu Dhabi Global Market), so ADGM DPR 2021 is not scored."
+)
+
+
+def _applies(rule, corpus: str) -> bool:
+    if rule.jurisdiction.strip().upper() == "ADGM":
+        return bool(_ADGM_NEXUS_RE.search(corpus))
+    return True
 _SEVERITY_ORDER = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
 
 
@@ -34,17 +49,26 @@ async def _pipeline(request: AuditRequest) -> AuditResponse:
 
     docs, text, warnings = await scrape_site(url)
     rules = get_rules()
+    corpus = "\n".join(d.text for d in docs)
+    applicable = {r.id: _applies(r, corpus) for r in rules}
 
-    scores = await score_rules(rules, text)  # raises ScoringUnavailableError
+    # raises ScoringUnavailableError
+    scores = await score_rules([r for r in rules if applicable[r.id]], text)
 
+    policy_texts = [d.text for d in docs if d.page_kind != "landing"]
+    used_quotes: set[str] = set()
     violations: list[ViolationResult] = []
     for rule in rules:
-        p = scores.get(rule.id, 0.0)
-        flagged = p >= FLAG_THRESHOLD
+        applies = applicable[rule.id]
+        p = scores.get(rule.id, 0.0) if applies else 0.0
+        flagged = applies and p >= FLAG_THRESHOLD
         exposure_usd, basis = compute_exposure(rule, p, revenue) if flagged else (0.0, rule.penalty_framework.basis or "estimate")
-        quote = extract_evidence(
-            rule, text,
-            policy_texts=[d.text for d in docs if d.page_kind != "landing"],
+        quote = (
+            extract_evidence(
+                rule, docs[0].text, policy_texts=policy_texts, used=used_quotes,
+            )
+            if applies
+            else _NOT_APPLICABLE
         )
         violations.append(
             ViolationResult(
@@ -61,6 +85,7 @@ async def _pipeline(request: AuditRequest) -> AuditResponse:
                 evidence_quote=quote,
                 remediation=rule.remediation,
                 statutory_label=statutory_label(rule),
+                applicable=applies,
             )
         )
 
@@ -70,7 +95,9 @@ async def _pipeline(request: AuditRequest) -> AuditResponse:
 
     total_usd = round(sum(v.exposure_usd for v in violations if v.flagged), 2)
     exposure = ExposureSummary(usd=total_usd, aed=usd_to_aed(total_usd))
-    limited = len(docs) < 2 or bool(warnings)
+    # Limited = no policy page made it into the audit. Failed guesses at
+    # /privacy etc. are normal and no longer mark full coverage as limited.
+    limited = not any(d.page_kind != "landing" for d in docs)
 
     briefing_md = await generate_briefing(violations, exposure)
 
