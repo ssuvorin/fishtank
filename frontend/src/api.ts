@@ -183,3 +183,47 @@ export async function requestNarration(result: AuditResponse): Promise<Narration
   }
   return body as NarrationResponse
 }
+
+export interface FixSession {
+  session_id: string
+  session_url: string
+  repo?: string
+  status?: string
+  status_detail?: string | null
+  pr_url?: string | null
+  summary?: string | null
+  todo_for_owner?: string[]
+}
+
+async function fixCall(path: string, init?: RequestInit): Promise<FixSession> {
+  let res: Response
+  try {
+    res = await fetch(`${API_BASE}/api/v1/fix-pr${path}`, init)
+  } catch {
+    throw new AuditApiError('Could not reach the audit service.', 'network_error', 0)
+  }
+  const body = (await res.json().catch(() => null)) as
+    | (FixSession & { detail?: string; code?: string })
+    | null
+  if (!res.ok || !body) {
+    throw new AuditApiError(
+      body?.detail ?? `Devin hand-off failed with HTTP ${res.status}.`,
+      body?.code ?? `http_${res.status}`,
+      res.status,
+    )
+  }
+  return body
+}
+
+/** Start a Devin session that applies the remediation prompt and opens a PR. */
+export function startFixPR(repo: string, prompt: string): Promise<FixSession> {
+  return fixCall('', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ repo, prompt }),
+  })
+}
+
+export function getFixPR(sessionId: string): Promise<FixSession> {
+  return fixCall(`/${encodeURIComponent(sessionId)}`)
+}

@@ -21,6 +21,13 @@ class Settings(BaseSettings):
     ELEVENLABS_API_KEY: str = ""
     ELEVENLABS_VOICE_ID: str = "onwK4e9ZLuTAKqWW03F9"  # "Daniel — Steady Broadcaster"
     ELEVENLABS_MODEL_ID: str = "eleven_multilingual_v2"
+    # Devin PR hand-off (service user + GitHub token passed as a session secret)
+    DEVIN_API_KEY: str = ""
+    DEVIN_MODE: str = "normal"
+    DEVIN_ORG_ID: str = ""
+    DEVIN_MAX_ACU: int = 10
+    GITHUB_TOKEN: str = ""
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]

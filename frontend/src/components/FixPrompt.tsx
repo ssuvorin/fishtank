@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import type { AuditResponse, ViolationResult } from '../api'
+import type { AuditResponse, FixSession, ViolationResult } from '../api'
+import { getFixPR, startFixPR } from '../api'
 import { copyText } from '../clipboard'
 import {
   JURISDICTION_LABEL,
@@ -171,6 +172,93 @@ function AgentIcon() {
 
 type CopyState = 'idle' | 'copied' | 'failed'
 
+const DEMO_REPO = 'https://github.com/ssuvorin/fishtank-demo-site'
+const TERMINAL: Record<string, true> = { exit: true, error: true, suspended: true }
+
+/** Hands the prompt to a Devin cloud session that opens a PR on the repo. */
+function DevinPRPanel({ prompt }: { prompt: string }) {
+  const [repo, setRepo] = useState(DEMO_REPO)
+  const [session, setSession] = useState<FixSession | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const sessionId = session?.session_id
+  const done = !!session?.pr_url || (session?.status ? !!TERMINAL[session.status] : false)
+
+  useEffect(() => {
+    if (!sessionId || done) return
+    const t = setInterval(async () => {
+      try {
+        setSession(await getFixPR(sessionId))
+      } catch (e) {
+        setError((e as Error).message)
+      }
+    }, 8000)
+    return () => clearInterval(t)
+  }, [sessionId, done])
+
+  async function launch() {
+    setBusy(true)
+    setError(null)
+    try {
+      setSession(await startFixPR(repo, prompt))
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const statusText = session?.pr_url
+    ? 'Pull request opened'
+    : session?.status
+      ? `Devin ${session.status}${session.status_detail ? ` · ${session.status_detail}` : ''}`
+      : session
+        ? 'Devin session starting…'
+        : null
+
+  return (
+    <div className="devin-pr">
+      <div className="devin-pr__row">
+        <input
+          className="devin-pr__repo mono"
+          value={repo}
+          onChange={(e) => setRepo(e.target.value)}
+          placeholder="https://github.com/owner/repo"
+          aria-label="GitHub repository"
+          disabled={!!session}
+        />
+        <button
+          type="button"
+          className="btn btn--primary devin-pr__go"
+          onClick={launch}
+          disabled={busy || !!session || !repo.trim()}
+        >
+          {busy ? 'Starting Devin…' : 'Open PR with Devin'}
+        </button>
+      </div>
+      {error && <p className="devin-pr__error">{error}</p>}
+      {session && (
+        <p className="devin-pr__status">
+          {!done && <span className="devin-pr__pulse" aria-hidden />}
+          {statusText} ·{' '}
+          <a href={session.session_url} target="_blank" rel="noreferrer">
+            watch session
+          </a>
+          {session.pr_url && (
+            <>
+              {' · '}
+              <a href={session.pr_url} target="_blank" rel="noreferrer">
+                <strong>view PR →</strong>
+              </a>
+            </>
+          )}
+        </p>
+      )}
+    </div>
+  )
+}
+
 function FixPromptDialog({
   title,
   subtitle,
@@ -236,6 +324,7 @@ function FixPromptDialog({
         <pre className="fix-dialog__preview" tabIndex={0}>
           {text}
         </pre>
+        <DevinPRPanel prompt={text} />
         <footer className="fix-dialog__foot">
           <span className="fix-dialog__hint">
             Paste into Devin, Claude Code, Copilot or Cursor ·{' '}
