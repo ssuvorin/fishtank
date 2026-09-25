@@ -32,4 +32,4 @@ async def audit(request: AuditRequest):
         return _err(exc.http_status, exc.message, exc.code)
     except Exception as exc:  # never leak a traceback as a 500 body
         log.exception("unexpected audit failure")
-        return _err(502, f"Audit failed unexpectedly: {exc}", "audit_error")
+        return _err(502, "The audit failed unexpectedly. Please retry.", "audit_error")

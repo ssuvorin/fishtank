@@ -11,6 +11,8 @@ import ExposureInsights from './components/ExposureInsights'
 import { FixReportButton } from './components/FixPrompt'
 import RegulatorStrip from './components/RegulatorStrip'
 import AmbientBackground from './components/AmbientBackground'
+import BriefingVoice from './components/BriefingVoice'
+import ExposureChart from './components/ExposureChart'
 import { hostOf } from './format'
 
 type Phase =
@@ -19,7 +21,18 @@ type Phase =
   | { kind: 'done'; result: AuditResponse }
   | { kind: 'error'; message: string; code: string; retryable: boolean }
 
-const FRAMEWORKS = ['UAE PDPL', 'DIFC DPL 2020', 'EU GDPR', 'ePrivacy Directive']
+const FRAMEWORKS = ['UAE PDPL', 'DIFC DPL 2020', 'ADGM DPR 2021', 'EU GDPR', 'ePrivacy Directive']
+
+/** Plain-language titles for API error codes — the raw code stays as a small tag. */
+const ERROR_TITLE: Record<string, string> = {
+  invalid_url: 'That address can’t be audited',
+  scrape_unreachable: 'We couldn’t reach the site',
+  scrape_http_error: 'The site returned an error',
+  scrape_no_text: 'No readable text on the page',
+  scoring_unavailable: 'Scoring service unavailable',
+  timeout: 'The audit timed out',
+  network_error: 'Audit service offline',
+}
 
 function LogoMark() {
   return (
@@ -62,8 +75,9 @@ export default function App() {
           kind: 'error',
           message: err.message,
           code: err.code,
-          retryable:
-            err.status === 503 || err.status === 504 || err.code === 'network_error',
+          // everything but a bad URL can succeed on a second try (bot walls,
+          // cold headless browser, flaky upstream)
+          retryable: err.code !== 'invalid_url' && err.status !== 422,
         })
       } else {
         setPhase({
@@ -151,7 +165,7 @@ export default function App() {
               </div>
               <div className="error-panel__body">
                 <div className="error-panel__title">
-                  The audit couldn't complete
+                  {ERROR_TITLE[phase.code] ?? 'The audit couldn’t complete'}
                   <span className="error-panel__code">{phase.code}</span>
                 </div>
                 <p className="error-panel__msg">{phase.message}</p>
@@ -187,6 +201,9 @@ export default function App() {
               </span>
             </div>
             <ExposureCallout result={phase.result} />
+            <ExposureChart result={phase.result}>
+              <BriefingVoice result={phase.result} />
+            </ExposureChart>
             <ExposureInsights result={phase.result} />
             <ViolationGrid violations={phase.result.violations} url={phase.result.url} />
             <BriefingPanel briefing_md={phase.result.briefing_md} />

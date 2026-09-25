@@ -32,7 +32,7 @@ function ViolationCard({ v, url }: { v: ViolationResult; url: string }) {
   const code = !absent && quote !== '' && isCodeLike(quote)
   const pct = Math.round(v.probability * 100)
   return (
-    <article className={`v-card v-card--${v.severity.toLowerCase()}`}>
+    <article id={`finding-${v.id}`} className={`v-card v-card--${v.severity.toLowerCase()}`}>
       <header className="v-card__head">
         <div className="v-card__titles">
           <h4 className="v-card__category">{v.category}</h4>
@@ -186,20 +186,24 @@ export default function ViolationGrid({
             <span className="compliant__check" aria-hidden>
               ✓
             </span>
-            <span className="compliant__title">Compliant / below flag threshold</span>
+            <span className="compliant__title">Compliant / below threshold / not applicable</span>
             <span className="compliant__count">{compliant.length}</span>
             <span className="compliant__chev" aria-hidden />
           </summary>
           <ul className="compliant__list">
             {compliant.map((v) => (
-              <li key={v.id} className="compliant__item">
+              <li
+                key={v.id}
+                className={`compliant__item${v.applicable === false ? ' compliant__item--na' : ''}`}
+                title={v.applicable === false ? v.evidence_quote : undefined}
+              >
                 <span className="compliant__cat">{v.category}</span>
                 <span className="compliant__law">{v.law}</span>
                 <span className="compliant__bar" aria-hidden>
                   <span style={{ width: `${Math.round(v.probability * 100)}%` }} />
                 </span>
                 <span className="compliant__prob mono">
-                  {Math.round(v.probability * 100)}%
+                  {v.applicable === false ? 'N/A' : `${Math.round(v.probability * 100)}%`}
                 </span>
               </li>
             ))}

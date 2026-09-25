@@ -12,13 +12,22 @@ DISCLAIMER = (
 )
 
 
+def _usd(n: float) -> str:
+    return f"USD {n:,.0f}"
+
+
 def _violations_block(violations: list[ViolationResult]) -> str:
+    # Figures go in pre-formatted ("USD 130,500"): given raw floats the model
+    # echoed "exposure_usd=130500.00" into a board-facing briefing.
     lines = []
     for v in violations:
+        if not v.applicable:
+            lines.append(f"- {v.category} ({v.id}) [not applicable to this site]")
+            continue
         status = "FLAGGED" if v.flagged else "compliant"
         lines.append(
-            f"- {v.id} [{status}] severity={v.severity} p={v.probability:.2f} "
-            f"exposure_usd={v.exposure_usd:.2f} basis={v.basis}\n"
+            f"- {v.category} ({v.id}) [{status}] severity={v.severity} "
+            f"probability={v.probability:.0%} exposure={_usd(v.exposure_usd)} basis={v.basis}\n"
             f"  law: {v.law}; articles: {', '.join(v.articles)}\n"
             f"  evidence: {v.evidence_quote}\n"
             f"  remediation: {v.remediation}"
@@ -40,7 +49,7 @@ def _fallback_briefing(violations: list[ViolationResult], exposure: ExposureSumm
     ]
     for i, v in enumerate(flagged, 1):
         lines.append(
-            f"{i}. `{v.id}` — {v.remediation} "
+            f"{i}. **{v.category}** — {v.remediation} "
             f"(removes up to USD {v.exposure_usd:,.0f} exposure)"
         )
     if not flagged:
@@ -58,18 +67,20 @@ async def generate_briefing(
         "audit data below — you MUST NOT introduce new violations, article numbers, "
         "fine amounts, or remediation steps that are not present here. The model "
         "never computes numbers: quote the supplied figures verbatim.\n\n"
-        f"TOTAL EXPOSURE: USD {exposure.usd:.2f} / AED {exposure.aed:.2f}\n\n"
-        "RULE RESULTS (id [flagged|compliant] severity probability exposure basis; "
-        "law; articles; verbatim evidence quote; remediation):\n"
+        f"TOTAL EXPOSURE: {_usd(exposure.usd)} / AED {exposure.aed:,.0f}\n\n"
+        "RULE RESULTS (category (id) [flagged|compliant] severity probability "
+        "exposure basis; law; articles; verbatim evidence quote; remediation):\n"
         f"{_violations_block(violations)}\n\n"
         "Produce Markdown with exactly this structure:\n"
         "## Executive Briefing\n"
         "2-4 sentences summarizing total exposure, how many of the rules are "
         "flagged, and the single largest driver.\n"
         "### Priority remediation\n"
-        "A numbered list of the flagged rules ordered by exposure_usd descending: "
-        "`<rule_id>` — the supplied remediation text — (removes up to USD "
-        "<exposure_usd> exposure). Do not invent actions.\n"
+        "A numbered list of the flagged rules ordered by exposure descending: "
+        "**<category>** — the supplied remediation text — (removes up to "
+        "<exposure exactly as supplied, e.g. USD 130,500>). Do not invent actions. "
+        "Never print rule ids, field names or unformatted numbers; write money "
+        "exactly as supplied (USD 1,234,567 / AED 1,234,567).\n"
         "Keep it under 300 words. End with the disclaimer line provided below, "
         "verbatim, as the final line:\n"
         f"{DISCLAIMER}"

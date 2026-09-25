@@ -124,3 +124,14 @@ Notes:
 ## Export (Executive Action Plan)
 
 No server endpoint. The frontend's Export button serializes the 200 payload — `{ url, revenue_used, exposure, violations, briefing_md }` plus `exported_at` — to a `.json` download (FR-010, US3). Guaranteed valid JSON because it is the already-parsed response.
+
+## Изменения 25.09 (QA smoke/regress)
+
+- `url`, который резолвится в loopback / private / link-local / metadata (127.0.0.1, 10/8, 169.254.169.254, ::1, localhost) → **422 `invalid_url`**, fetch не выполняется.
+- `annual_revenue`: нечисловое, NaN, ≤ 0 или `null` → используется значение по умолчанию (раньше `"abc"` давал 422). Строка `"5,000,000"` принимается.
+- `violations[].applicable: bool` — `false` для правил ADGM, если на сайте нет связи с ADGM; такие правила не оцениваются, `probability = 0`, `flagged = false`, экспозиция 0.
+- Ошибки fetch/500 возвращают человекочитаемый текст без сырых сообщений curl/исключений.
+
+### `GET /api/v1/briefing/voice` → `{ "enabled": bool }`
+### `POST /api/v1/briefing/speech`
+Тело: `{ host, exposure_usd, exposure_aed, flagged, total, top: [{rule_id, exposure_usd}] (≤3) }`. Скрипт строится на сервере по шаблону (свободный текст не принимается; `rule_id` сверяется с law.json). Ответ: `{ script, audio_base64, mime, words[{text,start,end}], cues[{rule_id,start}], voice }`. 503 — ключ ElevenLabs не задан/сбой; 429 — более 12 синтезов на IP за 10 минут; 422 — невалидный запрос. Ключ `ELEVENLABS_API_KEY` только в env бэкенда.
