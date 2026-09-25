@@ -48,11 +48,12 @@ export function isAbsenceStatement(quote: string): boolean {
   )
 }
 
-export type Jurisdiction = 'uae' | 'difc' | 'eu'
+export type Jurisdiction = 'uae' | 'difc' | 'adgm' | 'eu'
 
 export const JURISDICTION_LABEL: Record<Jurisdiction, string> = {
   uae: 'UAE PDPL',
   difc: 'DIFC',
+  adgm: 'ADGM',
   eu: 'EU',
 }
 
@@ -65,6 +66,7 @@ export function jurisdictionsOf(law: string): Jurisdiction[] {
   const out: Jurisdiction[] = []
   if (/\buae\b|pdpl|45\/2021/.test(l)) out.push('uae')
   if (l.includes('difc')) out.push('difc')
+  if (/\badgm\b/.test(l)) out.push('adgm')
   if (/gdpr|general data protection regulation|eprivacy|2002\/58|edpb/.test(l)) out.push('eu')
   return out
 }
