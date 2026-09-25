@@ -2712,6 +2712,63 @@ body {
   border-color: color-mix(in srgb, var(--high) 45%, transparent);
 }
 
+.devin-pr {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line-3);
+  border-radius: 10px;
+}
+
+.devin-pr__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.devin-pr__repo {
+  flex: 1 1 260px;
+  min-width: 0;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--line-3);
+  border-radius: 8px;
+}
+
+.devin-pr__status,
+.devin-pr__error {
+  margin: 0;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.devin-pr__status a {
+  color: inherit;
+}
+
+.devin-pr__error {
+  color: var(--high);
+}
+
+.devin-pr__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+  animation: devin-pr-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes devin-pr-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
 /* ---------- footer additions ---------- */
 
 .footer__regs {

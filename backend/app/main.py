@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
-from .routers import audit
+from .routers import audit, fix
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
@@ -33,6 +33,7 @@ app.add_middleware(
 )
 
 app.include_router(audit.router, prefix="/api/v1")
+app.include_router(fix.router, prefix="/api/v1")
 
 
 @app.get("/health")

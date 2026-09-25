@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     OPENROUTER_VAR_MODEL: str = "~openai/gpt-sol-latest"
     CORS_ORIGINS: str = "http://localhost:5173"
     LAW_JSON_PATH: str = ""
+    # Devin PR hand-off (service user + GitHub token passed as a session secret)
+    DEVIN_API_KEY: str = ""
+    DEVIN_MODE: str = "normal"
+    DEVIN_ORG_ID: str = ""
+    DEVIN_MAX_ACU: int = 10
+    GITHUB_TOKEN: str = ""
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
