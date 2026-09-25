@@ -13,19 +13,35 @@ const SEVERITY_BLURB: Record<Severity, string> = {
   MEDIUM: 'Monitor & tidy up',
 }
 
+/** Evidence quotes can be raw script/style dumps; render those as code, not prose. */
+const CODE_STRONG =
+  /[{}]|=>|\bfunction\s*[\w$]*\s*\(|\b(?:var|let|const)\s+[\w$]+\s*=|\b(?:document|window)\.|<\/?script|!important/
+
+function isCodeLike(s: string): boolean {
+  if (CODE_STRONG.test(s)) return true
+  const punct = (s.match(/[;=]/g) ?? []).length
+  if (punct >= 3) return true
+  // obfuscated/minified blobs: very long unbroken tokens
+  return s.split(/\s+/).some((w) => w.length > 40)
+}
+
 function ViolationCard({ v, url }: { v: ViolationResult; url: string }) {
   const kind = basisKind(v.basis)
-  const absent = !v.flagged || isAbsenceStatement(v.evidence_quote)
+  const quote = v.evidence_quote?.trim() ?? ''
+  const absent = !v.flagged || isAbsenceStatement(quote)
+  const code = !absent && quote !== '' && isCodeLike(quote)
   const pct = Math.round(v.probability * 100)
   return (
     <article className={`v-card v-card--${v.severity.toLowerCase()}`}>
       <header className="v-card__head">
         <div className="v-card__titles">
-          <span className="v-card__category">{v.category}</span>
-          <span className="v-card__law">{v.law}</span>
-          <JurisdictionTags law={v.law} />
+          <h4 className="v-card__category">{v.category}</h4>
+          <div className="v-card__meta">
+            <span className="v-card__law">{v.law}</span>
+            <JurisdictionTags law={v.law} />
+          </div>
         </div>
-        <span className={`badge badge--${kind}`} title={v.basis}>
+        <span className={`badge badge--${kind} v-card__basis`} title={v.basis}>
           <span className="badge__dot" aria-hidden />
           {basisLabel(v.basis)}
         </span>
@@ -42,34 +58,45 @@ function ViolationCard({ v, url }: { v: ViolationResult; url: string }) {
       )}
 
       <div className="v-card__stats">
-        <div className="v-card__prob">
-          <div className="v-card__prob-row">
-            <span className="v-card__prob-label">Violation probability</span>
-            <span className="v-card__prob-num mono">{pct}%</span>
-          </div>
+        <div className="v-card__stat v-card__prob">
+          <span className="v-card__stat-label">Probability</span>
+          <span className="v-card__prob-num mono">{pct}%</span>
           <span className="v-card__prob-bar" aria-hidden>
             <span className="v-card__prob-fill" style={{ width: `${pct}%` }} />
             <span className="v-card__prob-threshold" title="Flag threshold 50%" />
           </span>
         </div>
-        <div className="v-card__exposure">
+        <div className="v-card__stat v-card__exposure">
+          <span className="v-card__stat-label">Exposure</span>
           <span className="v-card__exposure-usd">{fmtUsd(v.exposure_usd)}</span>
           <span className="v-card__exposure-aed mono">{fmtAed(v.exposure_aed)}</span>
         </div>
       </div>
 
-      {v.evidence_quote && (
-        <figure className={`v-card__quote${absent ? ' v-card__quote--absent' : ''}`}>
-          <figcaption className="v-card__quote-cap">
-            {absent ? 'Gap identified' : 'Evidence from site'}
+      {quote !== '' && (
+        <figure
+          className={`v-card__quote${absent ? ' v-card__quote--absent' : ''}${
+            code ? ' v-card__quote--code' : ''
+          }`}
+        >
+          <figcaption className="v-card__cap">
+            {absent ? 'Gap identified' : code ? 'Evidence · page source' : 'Evidence from site'}
           </figcaption>
-          <blockquote>{v.evidence_quote}</blockquote>
+          {code ? (
+            <pre className="v-card__code" title={quote}>
+              <code>{quote}</code>
+            </pre>
+          ) : (
+            <blockquote className="v-card__prose" title={quote}>
+              {quote}
+            </blockquote>
+          )}
         </figure>
       )}
 
       <div className="v-card__remediation">
-        <span className="v-card__remediation-label">
-          <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden>
+        <span className="v-card__cap v-card__cap--ok">
+          <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden>
             <path
               d="M3 8.5l3 3 7-7.5"
               fill="none"

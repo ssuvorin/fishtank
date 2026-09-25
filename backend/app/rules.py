@@ -8,7 +8,7 @@ from pathlib import Path
 from .config import settings
 from .models import Rule
 
-_EXPECTED_RULES = 10
+_EXPECTED_RULES = 12
 
 
 def _law_json_path() -> Path:
@@ -17,12 +17,13 @@ def _law_json_path() -> Path:
         if p.exists():
             return p
     here = Path(__file__).resolve()
-    for candidate in (
-        Path("/app/law.json"),          # docker-compose mount
-        here.parents[2] / "law.json",   # repo root (backend/app/rules.py → repo)
-        Path.cwd() / "law.json",
+    candidates = [
+        Path("/app/law.json"),          # docker mount (dev + prod image)
+        Path.cwd() / "law.json",        # repo root or /app cwd
         Path.cwd().parent / "law.json",
-    ):
+    ]
+    candidates += [p / "law.json" for p in here.parents[:4]]
+    for candidate in candidates:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(

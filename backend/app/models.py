@@ -27,7 +27,7 @@ class AuditRequest(BaseModel):
 
 class ScrapedDocument(BaseModel):
     source_url: str
-    page_kind: Literal["landing", "privacy"]
+    page_kind: Literal["landing", "privacy", "cookie", "legal"]
     extraction_method: Literal["static", "rendered"]
     text: str
     coverage_notes: list[str] = Field(default_factory=list)

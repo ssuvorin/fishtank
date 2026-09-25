@@ -20,10 +20,20 @@ from ..models import ScrapedDocument
 
 _FETCH_TIMEOUT_S = 20.0
 _MIN_TEXT_CHARS = 200  # below this, try rendered fallback / no-content
-
 _PRIVACY_HREF_RE = re.compile(
-    r"privacy|privacy-policy|data-protection|privacy-notice|legal|terms", re.I
+    r"privacy|privacy-policy|data-protection|privacy-notice", re.I
 )
+_COOKIE_HREF_RE = re.compile(r"cookie|cookies", re.I)
+_LEGAL_HREF_RE = re.compile(
+    r"terms|legal|data-processing|dpa|cookie-policy|gdpr", re.I
+)
+# Common policy paths probed when link discovery comes up empty.
+_COMMON_POLICY_PATHS = (
+    "/privacy", "/privacy-policy", "/privacy-notice",
+    "/cookies", "/cookie-policy", "/legal", "/terms",
+)
+_MAX_POLICY_PAGES = 3
+_MAX_TEXT_CHARS = 60_000  # keep Jev `state` bounded
 
 
 def validate_url(url: str) -> str:
@@ -47,10 +57,12 @@ def _fetch_static(url: str):
 
 
 def _fetch_rendered(url: str):
-    """DynamicFetcher fallback — may be unavailable without `scrapling install`."""
+    """DynamicFetcher (headless Chromium) fallback — handles JS-only SPAs."""
     from scrapling import DynamicFetcher
 
-    return DynamicFetcher.fetch(url, timeout=_FETCH_TIMEOUT_S * 1000)
+    return DynamicFetcher.fetch(
+        url, timeout=int(_FETCH_TIMEOUT_S * 1000), network_idle=True
+    )
 
 
 def _classify_response(resp, url: str) -> str:
@@ -62,7 +74,7 @@ def _classify_response(resp, url: str) -> str:
         status = 200
     if status >= 400:
         if status == 403:
-            raise BlockedError(f"The site returned HTTP 403 — likely bot-blocked.")
+            raise BlockedError("The site returned HTTP 403 — likely bot-blocked.")
         raise HTTPFetchError(f"The site returned HTTP {status}.", status_code=status)
     body = getattr(resp, "body", "") or ""
     if isinstance(body, bytes):
@@ -70,27 +82,43 @@ def _classify_response(resp, url: str) -> str:
     return body
 
 
-def _discover_privacy_link(resp, base_url: str) -> str | None:
-    """Find a same-origin privacy-policy link in anchors (href or link text)."""
+def _discover_policy_links(resp, base_url: str, limit: int = _MAX_POLICY_PAGES) -> list[str]:
+    """Same-origin privacy/cookie/legal links in priority order, deduped."""
     base_host = urlparse(base_url).hostname or ""
+    found: list[str] = []
     try:
         anchors = resp.css("a[href]")
     except Exception:
-        return None
-    for a in anchors:
-        try:
-            href = (a.attrib.get("href") or "").strip()
-            text = (a.text or "").strip()
-        except Exception:
-            continue
-        if not href or href.startswith(("#", "javascript:", "mailto:", "tel:")):
-            continue
-        if not (_PRIVACY_HREF_RE.search(href) or _PRIVACY_HREF_RE.search(text)):
-            continue
-        full = urljoin(base_url, href)
-        if urlparse(full).hostname == base_host:
-            return full
-    return None
+        return found
+    tiers = (_PRIVACY_HREF_RE, _COOKIE_HREF_RE, _LEGAL_HREF_RE)
+    seen: set[str] = set()
+    for tier in tiers:
+        for a in anchors:
+            try:
+                href = (a.attrib.get("href") or "").strip()
+                text = (a.text or "").strip()
+            except Exception:
+                continue
+            if not href or href.startswith(("#", "javascript:", "mailto:", "tel:")):
+                continue
+            if not (tier.search(href) or tier.search(text)):
+                continue
+            full = urljoin(base_url, href).split("#")[0].rstrip("/")
+            if full in seen or urlparse(full).hostname != base_host:
+                continue
+            seen.add(full)
+            found.append(full)
+            if len(found) >= limit:
+                return found
+    return found
+
+
+def _probe_common_paths(base_url: str, already: list[str]) -> list[str]:
+    """Candidate policy URLs to try when anchors reveal nothing."""
+    p = urlparse(base_url)
+    root = f"{p.scheme}://{p.netloc}"
+    tried = set(already)
+    return [root + path for path in _COMMON_POLICY_PATHS if root + path not in tried]
 
 
 def _fetch_page_sync(url: str) -> tuple[str, str, object | None]:
@@ -131,10 +159,11 @@ async def _fetch_page(url: str):
 
 
 async def scrape_site(url: str) -> tuple[list[ScrapedDocument], str, list[str]]:
-    """Fetch landing + discovered privacy page.
+    """Fetch landing + up to N policy pages (privacy/cookies/legal).
 
-    Returns (documents, concatenated_text, warnings). Landing failures raise;
-    privacy-page failures only annotate coverage (FR-014).
+    Discovery order: same-origin anchors by tier (privacy → cookies → legal);
+    if anchors yield nothing, probe common paths (/privacy, /cookie-policy…).
+    Landing failures raise; policy-page failures only annotate coverage.
     """
     validate_url(url)
     warnings: list[str] = []
@@ -143,7 +172,7 @@ async def scrape_site(url: str) -> tuple[list[ScrapedDocument], str, list[str]]:
     text = _to_text(html)
     if len(text) < _MIN_TEXT_CHARS:
         raise NoContentError("Could not extract readable content from this site.")
-    notes = [f"rendered fetch used" ] if method == "rendered" else []
+    notes = ["rendered fetch used"] if method == "rendered" else []
     docs = [
         ScrapedDocument(
             source_url=url, page_kind="landing",
@@ -151,25 +180,37 @@ async def scrape_site(url: str) -> tuple[list[ScrapedDocument], str, list[str]]:
         )
     ]
 
-    privacy_url = _discover_privacy_link(resp, url) if resp is not None else None
-    if privacy_url:
-        try:
-            phtml, pmethod, _ = await _fetch_page(privacy_url)
-            ptext = _to_text(phtml)
-            if ptext:
-                docs.append(
-                    ScrapedDocument(
-                        source_url=privacy_url, page_kind="privacy",
-                        extraction_method=pmethod, text=ptext,
-                        coverage_notes=["rendered fetch used"] if pmethod == "rendered" else [],
-                    )
-                )
-            else:
-                warnings.append("privacy page found but no readable text extracted")
-        except Exception as exc:
-            warnings.append(f"privacy page fetch failed: {exc}")
-    else:
-        warnings.append("privacy policy page not found — landing text only")
+    policy_urls: list[str] = (
+        _discover_policy_links(resp, url) if resp is not None else []
+    )
+    if not policy_urls:
+        policy_urls = _probe_common_paths(url, [])[:_MAX_POLICY_PAGES]
+        if policy_urls:
+            warnings.append("no policy links found in DOM — probed common paths")
 
-    combined = "\n\n".join(d.text for d in docs)
+    async def _try_policy(purl: str) -> ScrapedDocument | None:
+        try:
+            phtml, pmethod, _ = await _fetch_page(purl)
+            ptext = _to_text(phtml)
+            if len(ptext) < 120:
+                return None
+            kind = "cookie" if _COOKIE_HREF_RE.search(purl) else (
+                "legal" if not _PRIVACY_HREF_RE.search(purl) else "privacy"
+            )
+            return ScrapedDocument(
+                source_url=purl, page_kind=kind,
+                extraction_method=pmethod, text=ptext,
+                coverage_notes=["rendered fetch used"] if pmethod == "rendered" else [],
+            )
+        except Exception as exc:
+            warnings.append(f"policy page {purl} failed: {type(exc).__name__}")
+            return None
+
+    extra = await asyncio.gather(*(_try_policy(u) for u in policy_urls))
+    docs.extend(d for d in extra if d is not None)
+
+    if len(docs) < 2:
+        warnings.append("no separate policy page found — landing text only")
+
+    combined = "\n\n".join(d.text for d in docs)[:_MAX_TEXT_CHARS]
     return docs, combined, warnings

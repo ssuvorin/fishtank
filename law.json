@@ -9,7 +9,10 @@
       "difc_fines_guidance": "https://assets.difc.com/.../fines_and_other_sanctions.pdf",
       "difc_enforcement_stats": "https://www.difc.com/business/registrars-and-commissioners/commissioner-of-data-protection/supervision-enforcement",
       "gdpr_consolidated": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0679-20160504",
-      "cnil_cookie_enforcement": "CNIL SAN-2021-023/024 (2021-12-31): Google EUR 150M, Facebook EUR 60M + EUR 100k/day injunction; Conseil d'Etat upheld Google EUR 100M (2020 case) on 2022-01-31"
+      "cnil_cookie_enforcement": "CNIL SAN-2021-023/024 (2021-12-31): Google EUR 150M, Facebook EUR 60M + EUR 100k/day injunction; Conseil d'Etat upheld Google EUR 100M (2020 case) on 2022-01-31",
+      "adgm_rulebook_55": "https://en.adgm.thomsonreuters.com/rulebook/55-general-conditions-imposing-administrative-fines",
+      "adgm_regulatory_actions": "https://www.adgm.com/operating-in-adgm/office-of-data-protection/regulatory-actions",
+      "adgm_okadoc_penalty": "https://assets.adgm.com/download/assets/Penalty+Notice+1+2024+Okado+Technologies+Limited+Redacted.pdf"
     },
     "critical_caveats": [
       "UAE PDPL has NO published fine schedule: Art. 26 delegates all penalty amounts to a Cabinet decision that has NOT been issued. Executive Regulations were still unpublished as of 2025-01-06 (DLA Piper). ALL 'default_exposure_calc' AED figures in this file are ANALYST ESTIMATES for demo purposes, not statutory penalties. penalty_framework.basis='estimate' marks them.",
@@ -26,7 +29,10 @@
       "category": "Data Subject Consent",
       "jurisdiction": "UAE Mainland",
       "law": "UAE Federal Decree-Law No. 45/2021 on Personal Data Protection (PDPL)",
-      "articles": ["Article 5", "Article 6"],
+      "articles": [
+        "Article 5",
+        "Article 6"
+      ],
       "check_description": "Confirm processing adheres to PDPL lawful bases (Art. 5) and consent conditions (Art. 6): consent must be provable, clear/simple/unambiguous, and withdrawal must be easy with the right stated in the consent request itself.",
       "noul_assertion": "The privacy policy fails to state valid consent conditions under UAE PDPL — no provable affirmative consent, or omits the right to withdraw consent easily at any time.",
       "penalty_framework": {
@@ -48,7 +54,11 @@
       "category": "Local Representation & DPO",
       "jurisdiction": "UAE Mainland & DIFC",
       "law": "UAE PDPL / DIFC Data Protection Law No. 5 of 2020",
-      "articles": ["UAE PDPL Art. 10", "UAE PDPL Art. 11", "DIFC DPL Art. 16-20"],
+      "articles": [
+        "UAE PDPL Art. 10",
+        "UAE PDPL Art. 11",
+        "DIFC DPL Art. 16-20"
+      ],
       "check_description": "Check whether a DPO appointment and its accessible contact details are published. PDPL Art. 10-11 require a DPO where processing involves sensitive data or large-scale/systematic monitoring; DIFC DPL requires DPO appointment and annual assessment for high-risk processing.",
       "noul_assertion": "The document lacks contact details for an appointed Data Protection Officer (DPO) or local representative accessible within the UAE/DIFC jurisdiction.",
       "penalty_framework": {
@@ -71,7 +81,13 @@
       "category": "Cross-Border Data Governance",
       "jurisdiction": "UAE / DIFC / EU",
       "law": "UAE PDPL Art. 22-23 / DIFC DPL Art. 26-28 / GDPR Art. 44-49",
-      "articles": ["UAE PDPL Art. 22", "UAE PDPL Art. 23", "DIFC DPL Art. 26", "DIFC DPL Art. 27", "GDPR Art. 46"],
+      "articles": [
+        "UAE PDPL Art. 22",
+        "UAE PDPL Art. 23",
+        "DIFC DPL Art. 26",
+        "DIFC DPL Art. 27",
+        "GDPR Art. 46"
+      ],
       "check_description": "Audit cross-border transfer disclosures: PDPL Art. 22 permits transfers only to adequate jurisdictions or under safeguards (Art. 23: contracts/SCCs, BCRs, consent, legal claims). DIFC Art. 26-27 impose adequacy/SCC requirements; Art. 28 adds government-data-sharing safeguards.",
       "noul_assertion": "The privacy policy describes international data transfers without naming adequate jurisdictions, Standard Contractual Clauses, or other UAE PDPL Art. 23 / DIFC Art. 27 safeguards.",
       "penalty_framework": {
@@ -94,7 +110,11 @@
       "category": "Incident Response & Transparency",
       "jurisdiction": "UAE Mainland / EU",
       "law": "UAE PDPL Art. 9 / GDPR Art. 33-34",
-      "articles": ["UAE PDPL Art. 9", "GDPR Art. 33", "GDPR Art. 34"],
+      "articles": [
+        "UAE PDPL Art. 9",
+        "GDPR Art. 33",
+        "GDPR Art. 34"
+      ],
       "check_description": "Confirm documented commitments to notify the UAE Data Office ('Bureau') of breaches and inform affected data subjects where the breach threatens privacy/confidentiality — PDPL Art. 9 sets no fixed hour deadline (period set by Executive Regulations); GDPR requires 72h.",
       "noul_assertion": "The policy contains no data breach incident-response clause — no commitment to notify the UAE Data Office or affected users within defined timeframes after unauthorized access.",
       "penalty_framework": {
@@ -115,7 +135,14 @@
       "category": "Data Subject Rights",
       "jurisdiction": "UAE Mainland",
       "law": "UAE PDPL Art. 13-18",
-      "articles": ["UAE PDPL Art. 13", "UAE PDPL Art. 15", "UAE PDPL Art. 16", "UAE PDPL Art. 17", "UAE PDPL Art. 18", "GDPR Art. 17"],
+      "articles": [
+        "UAE PDPL Art. 13",
+        "UAE PDPL Art. 15",
+        "UAE PDPL Art. 16",
+        "UAE PDPL Art. 17",
+        "UAE PDPL Art. 18",
+        "GDPR Art. 17"
+      ],
       "check_description": "Verify the policy gives UAE data subjects actionable procedures for: obtaining information (Art. 13), erasure (Art. 15), rectification (Art. 16), restriction (Art. 17), objection incl. automated processing/profiling objection (Art. 18). A mere list of rights without a working request channel fails.",
       "noul_assertion": "The policy omits an actionable procedure (form, email, or portal plus processing timeframe) for data subjects to exercise UAE PDPL rights — erasure, rectification, restriction, objection.",
       "penalty_framework": {
@@ -136,7 +163,11 @@
       "category": "Sensitive & Children's Data",
       "jurisdiction": "UAE Mainland",
       "law": "UAE Federal Decree-Law No. 45/2021",
-      "articles": ["UAE PDPL Art. 4", "UAE PDPL Art. 5", "UAE PDPL Art. 6"],
+      "articles": [
+        "UAE PDPL Art. 4",
+        "UAE PDPL Art. 5",
+        "UAE PDPL Art. 6"
+      ],
       "check_description": "Check handling of sensitive personal data (health, biometric, genetic, racial/ethnic, religious, political) and children's data: PDPL prohibits sensitive-data processing absent explicit consent or listed exemptions; children require verifiable guardian consent (under-18 per UAE practice; no statutory age in the decree).",
       "noul_assertion": "The service processes or may process sensitive categories or minors' data but the policy omits explicit-consent/guardian-consent workflows and states no minimum age.",
       "penalty_framework": {
@@ -157,7 +188,11 @@
       "category": "AI & Automated Decisions",
       "jurisdiction": "UAE Mainland / EU",
       "law": "UAE PDPL Art. 13(1)(c) & Art. 18 / GDPR Art. 22",
-      "articles": ["UAE PDPL Art. 13(1)(c)", "UAE PDPL Art. 18", "GDPR Art. 22"],
+      "articles": [
+        "UAE PDPL Art. 13(1)(c)",
+        "UAE PDPL Art. 18",
+        "GDPR Art. 22"
+      ],
       "check_description": "Confirm disclosure of automated processing/profiling decisions (PDPL Art. 13(1)(c) requires telling subjects about decisions made on automated processing including profiling) and an objection mechanism (Art. 18).",
       "noul_assertion": "The policy fails to disclose whether personal data feeds automated decision-making or profiling, and provides no human-review or objection channel for such decisions.",
       "penalty_framework": {
@@ -178,7 +213,11 @@
       "category": "Cookies & Consent Mechanics",
       "jurisdiction": "EU / Global (secondary for UAE-facing sites)",
       "law": "ePrivacy Directive 2002/58/EC Art. 5(3) & EDPB Guidelines 05/2020",
-      "articles": ["ePrivacy Art. 5(3)", "GDPR Art. 7(3)", "EDPB Guidelines 05/2020"],
+      "articles": [
+        "ePrivacy Art. 5(3)",
+        "GDPR Art. 7(3)",
+        "EDPB Guidelines 05/2020"
+      ],
       "check_description": "Verify a 1-click 'Reject All' mechanism equally prominent to 'Accept All' on the first cookie layer; no pre-ticked boxes; withdrawal as easy as consent (GDPR Art. 7(3)).",
       "noul_assertion": "The site or policy fails to provide an equally prominent 1-click 'Reject All' for non-essential cookies, or uses dark patterns such as pre-ticked consent boxes.",
       "penalty_framework": {
@@ -199,7 +238,10 @@
       "category": "Data Subject Consent",
       "jurisdiction": "EU (expansion risk)",
       "law": "General Data Protection Regulation (GDPR)",
-      "articles": ["Article 6(1)(a)", "Article 7"],
+      "articles": [
+        "Article 6(1)(a)",
+        "Article 7"
+      ],
       "check_description": "For EU-facing operations: consent must be freely given, specific, informed, unambiguous opt-in; provable (Art. 7(1)); withdrawal as easy as granting (Art. 7(3)).",
       "noul_assertion": "The privacy documentation permits processing on implied consent, opt-out models, or continued browsing without verifiable affirmative action.",
       "penalty_framework": {
@@ -219,7 +261,9 @@
       "category": "Protection of Minors",
       "jurisdiction": "EU (expansion risk)",
       "law": "GDPR Art. 8",
-      "articles": ["GDPR Art. 8"],
+      "articles": [
+        "GDPR Art. 8"
+      ],
       "check_description": "For EU-facing services offering information society services to children: consent valid at 16+; below that requires parental-responsibility holder's consent; member states may lower the age to 13 minimum; controller must make reasonable verification efforts.",
       "noul_assertion": "The service offers EU-facing features but states no age threshold or parental-consent verification for under-16 users.",
       "penalty_framework": {
@@ -233,6 +277,56 @@
       "evidence": "GDPR Art. 8(1): 'at least 16 years old'; MS may lower to >=13. UK lowered to 13; DE/HU/NL kept 16; AT/IT 14.",
       "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0679-20160504",
       "remediation": "State 16+ (or per-market threshold 13-16) for EU users plus verifiable parental-consent flow."
+    },
+    {
+      "id": "adgm_breach_notification",
+      "category": "Incident Response & Transparency",
+      "jurisdiction": "ADGM",
+      "law": "ADGM Data Protection Regulations 2021",
+      "articles": [
+        "ADGM DPR s.32",
+        "ADGM DPR s.33"
+      ],
+      "check_description": "Confirm a documented commitment to notify the ADGM Commissioner of Data Protection of a personal-data breach without undue delay, and where feasible within 72 hours (s.32(1)); high-risk breaches also require notifying affected data subjects in clear language (s.33).",
+      "noul_assertion": "The policy contains no breach-notification clause covering regulator notice within 72 hours and data-subject communication for high-risk breaches, as required by ADGM DPR s.32-33.",
+      "penalty_framework": {
+        "type": "administrative_fine",
+        "currency": "USD",
+        "max_fine": 28000000,
+        "default_exposure_calc": "250000",
+        "basis": "statutory",
+        "note": "DPR s.55 caps each Penalty Notice at USD 28M total per contravention set; figure models a mid-severity notice."
+      },
+      "severity": "CRITICAL",
+      "evidence": "ADGM enforcement is real: Penalty Notice 1/2024 — Okadoc Technologies (registered at 15-122 WeWork, Hub71 Al Khatem Tower — this venue) fined USD 20,000 for data-subject-rights failures; VentureRock Global received a Direction for Security Principle breaches (June 2023).",
+      "source_url": "https://en.adgm.thomsonreuters.com/rulebook/32-notification-personal-data-breach-commissioner-data-protection",
+      "remediation": "Add a breach-response clause: notify the ADGM Office of Data Protection via the Online Registry within 72h of awareness, communicate to data subjects in plain language when high risk, and document delay reasons."
+    },
+    {
+      "id": "adgm_registration_and_policy",
+      "category": "ADGM Registration & Governance",
+      "jurisdiction": "ADGM",
+      "law": "ADGM Data Protection Regulations 2021",
+      "articles": [
+        "ADGM DPR s.22",
+        "ADGM DPR s.29",
+        "ADGM DPR s.35",
+        "ADGM DPR s.56"
+      ],
+      "check_description": "For ADGM-registered entities: internal data protection policy in place (s.22(2)), cooperation duty with the Commissioner (s.29), DPO designation where required + notification to Commissioner within one month (s.35(4)), and paid Data Protection Fee (fixed penalty for non-payment, s.56).",
+      "noul_assertion": "The site gives no indication of ADGM registration, a documented internal data-protection policy, DPO designation/contact, or awareness of the ADGM data protection fee obligation.",
+      "penalty_framework": {
+        "type": "administrative_fine",
+        "currency": "USD",
+        "max_fine": 28000000,
+        "default_exposure_calc": "100000",
+        "basis": "statutory",
+        "note": "Okadoc (Hub71 tenant) was fined USD 20k for rights/policy/cooperation breaches — the floor precedent; cap is USD 28M per s.55."
+      },
+      "severity": "HIGH",
+      "evidence": "Okadoc Penalty Notice (May 2024): USD 20,000 for missing internal DP policy + DSAR handling + non-cooperation — the fined entity sits in Hub71 itself, so 'we're small/a startup' is not a defense.",
+      "source_url": "https://www.adgm.com/operating-in-adgm/office-of-data-protection/regulatory-actions",
+      "remediation": "If ADGM-registered: adopt a written internal DP policy (s.22), complete the ODP DPO assessment and notify appointment within one month (s.35(4)), and keep the annual Data Protection Fee current (s.56 fixed penalty)."
     }
   ]
 }
